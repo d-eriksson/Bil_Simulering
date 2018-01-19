@@ -21,7 +21,7 @@ differentialRatio = 3.42;
 transm_efficiency = 0.7;
 
 % Initial velocity
-v(1) = 0;
+v = 0;
 
 % Engine torque curve
 rpm_range = 1000:6000;
@@ -36,6 +36,10 @@ throttle = 1.0;
 % Calculate gear ratio
 gearRatio = gears(current_gear)*differentialRatio*60/(2*pi);
 
+% Calculate angular velocity of wheels
+ang_velocity = v/wheelRadius; % rad/s
+
+
 % Calculate RPM
 rpm = ang_velocity*gearRatio*differentialRatio;
 if(rpm<1000)
@@ -43,7 +47,7 @@ if(rpm<1000)
 end
 
 % Calculate torque at the wheels
-T = engineTorque(rpm)*differentialRatio*gearRatio*efficiency/wheelRadius;
+T = throttle*engineTorque(rpm)*differentialRatio*gearRatio*efficiency/wheelRadius;
 
 % Calculate wheel force on ground --------?---------
 Fw = T/wheelRadius;
