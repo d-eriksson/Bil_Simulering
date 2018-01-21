@@ -1,4 +1,4 @@
-# Bil_Simulering
+# Pre-study
 	Denna mapp innehåller förstudien som är gjord i MATLAB
 
 # Författare

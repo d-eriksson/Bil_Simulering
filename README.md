@@ -1,4 +1,4 @@
-# Bil_Simulering
+# Bil Simulering
 	Det här är ett Modellering och simulerings projekt. Syftet med detta projekt är att simulera en bil.
 
 # Författare

@@ -25,7 +25,7 @@ v = 0;
 
 % Engine torque curve
 rpm_range = 1000:6000;
-engineTorque(1000:6000) = 560-0.000025*abs(4400-rpm_range).^2+0.000000004*abs(4400-rpm_range).^3-0.02*rpm_range;
+engineTorque(1000:6000) = 560-0.000025*abs(4400-rpm_range).^2+0.000000004*abs(4400-rpm_range).^3-0.02*rpm_range; % --Vad är konstanterna för något?--
 
 % --------------- loop here ------------------------
 % WRITE A FUNCTION TO SELECT GEAR
