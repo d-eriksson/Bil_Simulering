@@ -22,16 +22,16 @@
 	3. I vita rutan längst upp i rutan skriver du:
 			  $(SolutionDir)/../External Resources/GLFW/include 
 			  $(SolutionDir)/../External Resources/GLEW/include/GL 
-			stäng sedan rutan genom att klicka på OK men stanna kvar i Properties rutan.
+	stäng sedan rutan genom att klicka på OK men stanna kvar i Properties rutan.
 	4. Gå till  linker > General > Additional Library Directories > edit .
 	5. I vita rutan längst upp i rutan skriver du:
 		  $(SolutionDir)/../External Resources/GLFW/lib-vc2015 
 	    	  $(SolutionDir)/../External Resources/GLEW/lib/Release/x64 
-		stäng sedan rutan genom att klicka på  OK  men stanna kvar i Properties rutan.
+	stäng sedan rutan genom att klicka på  OK  men stanna kvar i Properties rutan.
 	6. Gå till  linker > Input > Additional Dependencies > edit .
 	7. I vita rutan längst upp i rutan skriver du:
 		opengl32.lib
 		glew32s.lib
 		glfw3.lib
-		Klicka  OK och sedan  Verkställ  du kan sedan stänga ned  Properties  rutan.
+	Klicka  OK och sedan  Verkställ  du kan sedan stänga ned  Properties  rutan.
 	8. Du kan behöva ändra Solution Platform  till  x64  då denna ofta är inställd på  x86  men det stödjer ej  GLEW 
