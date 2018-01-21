@@ -35,7 +35,7 @@ gearRatio = gears(current_gear(1));
 % --------------- loop here ------------------------
 % Five second loop, sampling frequency of 100
 i = 1;
-for t = 0:0.01:5
+for t = 0:0.001:5
 % temporary hard coded...
 throttle = 1.0; % User input
 
@@ -44,24 +44,19 @@ rpm = floor(velocity(i)/wheelRadius*gearRatio*differentialRatio*60/(2*pi));
 if(rpm<1000)
     % If rpm falls below stalling threshold, pretend rpm is 1000
     rpm = 1000;
-    if(i-1>=1)
-        % If there is a previous index for current gear, use the same gear
-        current_gear(i)=current_gear(i-1);
-    else
-        % If there is no previous index, set gear to 1
-        current_gear(i) = 1;
-    end
-elseif(rpm>6000)
-    while(rpm>6000)
+    % Also change to first gear!
+    current_gear(i) = 1;
+elseif(rpm>6000)       
         % As long as rpm is above 6000(redline), increase gear
-        if(current_gear(i)<6)
-        current_gear(i) = current_gear(i) + 1;
-        gearRatio = gears(current_gear(i));
-        rpm = floor(velocity(i)/wheelRadius*gearRatio*differentialRatio*60/(2*pi));
+        if(current_gear(i-1)<6)
+            current_gear(i) = current_gear(i-1) + 1;
+            gearRatio = gears(current_gear(i));
+            rpm = floor(velocity(i)/wheelRadius*gearRatio*differentialRatio*60/(2*pi));
         else
+            % If the gear is already 6 (max) reset rpm to 6000
             rpm = 6000;
+            current_gear(i) = current_gear(i-1);
         end
-    end
 else
     % If rpm is within range, do not switch gears
     current_gear(i) = current_gear(i-1);
@@ -71,11 +66,12 @@ end
 % Calculate torque at the wheels
 Torque = throttle*engineTorque(rpm)*differentialRatio*gearRatio*transm_efficiency/wheelRadius;
 
-% Calculate wheel force on ground --------?---------
-Fw = Torque/wheelRadius;
+% Calculate wheel force on ground and subtract air resistance and rolling
+% resistance
+Fw(i) = Torque/wheelRadius-Cdrag*velocity(i).^2-cRR*velocity(i);
 
 % Calculate acceleration
-acceleration = Fw/mass;
+acceleration = Fw(i)/mass;
 
 % Calculate velocity
 velocity(i+1) = velocity(i) + acceleration*t;
@@ -84,5 +80,7 @@ i = i+1;
 end
 
 % Convert to km/h
-%Vkmh = v*3.6;
-%plot(Vkmh)
+Vkmh = velocity*3.6;
+plot(Vkmh)
+xlabel('Time (ms)')
+ylabel('Velocity (km/h)')
