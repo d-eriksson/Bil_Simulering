@@ -8,9 +8,8 @@
 	David Eriksson
 ## Mjukvara, APIer och programmeringspråk
 	MATLAB
-	OPENGL
-	GLEW
-	C++
+	JavaScript
+	ThreeJS
 ## Mappstruktur
 	~/3D-Simulation
 		- Detta är mappen som innehåller allt material för den finaliserade simulationen
