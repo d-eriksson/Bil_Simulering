@@ -33,9 +33,10 @@ current_gear(1) = 1; % Gears are changed automatically at redline (for now)
 gearRatio = gears(current_gear(1));
 
 % --------------- loop here ------------------------
-% Five second loop, sampling frequency of 100
+% Five second loop, sampling interval of Ts
+Ts = 0.001;
 i = 1;
-for t = 0:0.001:5
+for t = 0:Ts:5
 % temporary hard coded...
 throttle = 1.0; % User input
 
@@ -74,7 +75,7 @@ Fw(i) = Torque/wheelRadius-Cdrag*velocity(i).^2-cRR*velocity(i);
 acceleration = Fw(i)/mass;
 
 % Calculate velocity
-velocity(i+1) = velocity(i) + acceleration*t;
+velocity(i+1) = velocity(i) + acceleration*Ts;
 
 i = i+1;
 end
