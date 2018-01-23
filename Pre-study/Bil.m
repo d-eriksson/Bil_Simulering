@@ -46,10 +46,10 @@ throttle = 1.0; % User input
 
 % Calculate RPM and round it. rpm is used as index for enginge torque later
 % and must be an integer
-rpm(i) = floor(velocity(i)/wheel_radius*gearRatio*differentialRatio*60/(2*pi));
+rpm(i) = floor((velocity(i)/wheel_radius)*gearRatio*differentialRatio*60/(2*pi));
 
 % ----- GEARBOX -----
-if(rpm(i)>=1000 && rpm(i)<=5200)
+if(rpm(i)>=1000 && rpm(i)<=6000)
     % If rpm is within range, do not switch gears
     current_gear(i) = current_gear(i-1);
 
@@ -59,17 +59,17 @@ elseif(rpm(i)<1000)
     % Also change to first gear!
     current_gear(i) = 1;
 
-elseif(rpm(i)>5200 && rpm(i)<6000 && current_gear(i-1)<6)       
+elseif(rpm(i)>6000 && current_gear(i-1)<6)       
     % As long as rpm is above 6000(redline), increase gear
     current_gear(i) = current_gear(i-1) + 1;
     % Recalculate rpm after gear change
     gearRatio = gears(current_gear(i));
     rpm(i) = floor(velocity(i)/wheel_radius*gearRatio*differentialRatio*60/(2*pi));
 
-elseif(rpm(i)>6000)
-    % If the gear is already 6 (max) reset rpm to 6000
-    rpm(i) = 6000;
-    current_gear(i) = current_gear(i-1);
+%elseif(rpm(i)>6000)
+%    % If the gear is already 6 (max) reset rpm to 6000
+%    rpm(i) = 6000;
+%    current_gear(i) = current_gear(i-1);
 end
 
 
