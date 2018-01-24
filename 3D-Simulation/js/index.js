@@ -22,9 +22,8 @@ function init(){
 
 	createWorld();
 	camerarig();
-	loadMTLOBJ('objects/c7/','c7.mtl','c7.obj',0 ,0 ,0,car);
+	loadMTLOBJ('objects/c7/','c7.mtl','c7.obj',0 ,0 ,0,car, 0.06);
 	lights();
-	
 	scene.add(car);
 	
 	renderer = new THREE.WebGLRenderer();
@@ -32,7 +31,7 @@ function init(){
 	renderer.setSize( window.innerWidth, window.innerHeight );
 	container.appendChild( renderer.domElement );
 }
-function loadMTLOBJ( basepath, mtlname, objname, x, y, z, group){
+function loadMTLOBJ( basepath, mtlname, objname, x, y, z, group, scale){
 	var mtlLoader = new THREE.MTLLoader();
 	mtlLoader.setPath(basepath);
 	mtlLoader.load(mtlname, function(materials){
@@ -42,6 +41,7 @@ function loadMTLOBJ( basepath, mtlname, objname, x, y, z, group){
 		objLoader.load(basepath +objname, function(object){
 			object.rotateX(-Math.PI/2);
 			object.position.set(x,y,z);
+			object.scale.set(scale,scale,scale);
 			group.add(object);
 		}, function(success){console.log(success)}, function(err){console.log(err)});
 	});
@@ -60,32 +60,32 @@ function lights(){
 
 }
 function camerarig(){
-	camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 1, 4000 );
-	camera.position.x = -7;
-	camera.position.y = 20;
-	camera.position.z = 8;
+	camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 0.0001, 4000 );
+	camera.position.x = -0.4;
+	camera.position.y = 1.1;
+	camera.position.z = 0.48;
 	camera.rotateY(-1*Math.PI/32);
 
-	camera2 = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 4000 );
+	camera2 = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 0.001, 4000 );
 	camera2.position.x = 0;
-	camera2.position.y = 20;
-	camera2.position.z = 120;
+	camera2.position.y = 1.2;
+	camera2.position.z = 7.2;
 
-	camera3 = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 4000 );
+	camera3 = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 0.001, 4000 );
 	camera3.position.x = 0;
-	camera3.position.y = 20;
-	camera3.position.z = -120;
+	camera3.position.y = 1.2;
+	camera3.position.z = -7.2;
 	camera3.rotateY(Math.PI);
 
-	camera4 = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 4000 );
-	camera4.position.x = -20;
-	camera4.position.y = 5;
-	camera4.position.z = 20;
+	camera4 = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 0.001, 4000 );
+	camera4.position.x = -1.2;
+	camera4.position.y = 0.3;
+	camera4.position.z = 1.2;
 
-	camera5 = new THREE.PerspectiveCamera( 90, window.innerWidth / window.innerHeight, 1, 4000 );
+	camera5 = new THREE.PerspectiveCamera( 90, window.innerWidth / window.innerHeight, 0.001, 4000 );
 	camera5.position.x = 0;
-	camera5.position.y = 1000;
-	camera5.position.z = -500;
+	camera5.position.y = 10;
+	camera5.position.z = 0;
 	camera5.rotateX(-Math.PI/2);
 
 
@@ -93,15 +93,35 @@ function camerarig(){
 	car.add(camera2);
 	car.add(camera3);
 	car.add(camera4);
-	scene.add(camera5);
+	car.add(camera5);
 }
 function createWorld(){
 
 	var geometry_ground = new THREE.PlaneGeometry( 4000, 4000, 8 );
-	var material_ground = new THREE.MeshPhongMaterial( { color: 0xdddddd, side: THREE.DoubleSide})
+	var material_ground = new THREE.MeshPhongMaterial( { color: 0xdddddd, side: THREE.DoubleSide});
 	var ground = new THREE.Mesh( geometry_ground, material_ground );
+	ground.position.y = -1;
 	ground.rotateX(Math.PI/2);
 	scene.add( ground );
+
+	k = 0;
+	while (k < 40){
+		var geometry_box = new THREE.BoxGeometry( 1, 1, 1 );
+		var material_box = new THREE.MeshPhongMaterial( { color: 0xff0000, side: THREE.DoubleSide});
+		var box = new THREE.Mesh( geometry_box, material_box );
+		box.position.x = 2;
+		box.position.z = -2*k;
+		box.position.y = 0.5;
+
+		scene.add( box );
+		var box2 = new THREE.Mesh( geometry_box, material_box );
+		box2.position.x = -2;
+		box2.position.z = -2*k;
+		box2.position.y = 0.5;
+		scene.add(box2);
+		k++;
+	}
+
 }
 
 function animate() {
@@ -109,7 +129,7 @@ function animate() {
 	render();
 }
 function render(){
-	car.position.z -= 1;
+	car.position.z -= 0.1;
 	
 	if(ChooseCamera == 0){	
 		renderer.render(scene,camera);
