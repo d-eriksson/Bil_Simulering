@@ -19,7 +19,7 @@ var time = 0.0;
 	var Throttlec = document.getElementById('Throttle');
 
 var carMass, wheelRadius, airDensity, dragCoefficient, dragArea, netDragCoefficient, rollingResistance, differentialRatio;
-var transmissionEfficiency, gear,gearRatio,throttle,velocity;
+var transmissionEfficiency, gear,gearRatio,throttle,velocity, cutOffThrottle;
 
 init();
 animate();
@@ -35,7 +35,7 @@ function init(){
 	carVariables();
 	createWorld();
 	camerarig();
-	loadMTLOBJ('objects/c7/','c7.mtl','c7.obj',0 ,0 ,0,car, 0.06);
+	loadMTLOBJ('objects/c7/','c7.mtl','c7.obj',0 ,0 ,0,car, 0.053488095);
 	lights();
 	scene.add(car);
 	
@@ -49,11 +49,12 @@ function animate() {
 	render();
 }
 function render(){
-	car.position.z -= 0.1;
+	
 	prevTime = time;
 	time = time + clock.getDelta();
 	deltatime = time - prevTime 
 	velocity = Velocity(deltatime);
+	car.position.z = car.position.z - velocity*deltatime;
 
 	Gearc.innerHTML = "gear: " + gear;
 	Vkmhc.innerHTML = "km/h: " + velocity*3.6;
@@ -107,10 +108,10 @@ function lights(){
 
 }
 function camerarig(){
-	camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 0.0001, 4000 );
-	camera.position.x = -0.4;
-	camera.position.y = 1.1;
-	camera.position.z = 0.48;
+	camera = new THREE.PerspectiveCamera( 30, window.innerWidth / window.innerHeight, 0.001, 4000 );
+	camera.position.x = -0.34;
+	camera.position.y = 0.95;
+	camera.position.z = 0.6;
 	camera.rotateY(-1*Math.PI/32);
 
 	camera2 = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 0.001, 4000 );
@@ -129,9 +130,9 @@ function camerarig(){
 	camera4.position.y = 0.3;
 	camera4.position.z = 1.2;
 
-	camera5 = new THREE.PerspectiveCamera( 90, window.innerWidth / window.innerHeight, 0.001, 4000 );
+	camera5 = new THREE.PerspectiveCamera( 10, window.innerWidth / window.innerHeight, 0.001, 4000 );
 	camera5.position.x = 0;
-	camera5.position.y = 10;
+	camera5.position.y = 1000;
 	camera5.position.z = 0;
 	camera5.rotateX(-Math.PI/2);
 
@@ -152,18 +153,18 @@ function createWorld(){
 	scene.add( ground );
 
 	k = 0;
-	while (k < 40){
+	while (k < 200){
 		var geometry_box = new THREE.BoxGeometry( 1, 1, 1 );
 		var material_box = new THREE.MeshPhongMaterial( { color: 0xff0000, side: THREE.DoubleSide});
 		var box = new THREE.Mesh( geometry_box, material_box );
 		box.position.x = 2;
-		box.position.z = -2*k;
+		box.position.z = -10*k;
 		box.position.y = 0.5;
 
 		scene.add( box );
 		var box2 = new THREE.Mesh( geometry_box, material_box );
 		box2.position.x = -2;
-		box2.position.z = -2*k;
+		box2.position.z = -10*k;
 		box2.position.y = 0.5;
 		scene.add(box2);
 		k++;
@@ -171,8 +172,11 @@ function createWorld(){
 
 }
 document.addEventListener('keydown', function(e) { 
-    if(e.keyCode == 87){
+    if(e.keyCode == 87 && cutOffThrottle == false){
     	throttle = 1.0;
+    }
+    else{
+    	throttle = 0.0;
     }
     if(e.keyCode == 38){
     	gearUp();
@@ -221,6 +225,7 @@ function carSpecificVariables(){
 	gearRatio = [0,2.66,1.78,1.3,1,0.74,0.5];
 	throttle = 0;
 	velocity = 0.0;
+	cutOffThrottle = false;
 
 }
 function worldSpecificVariables(){
@@ -249,10 +254,15 @@ function calculateRPM(){
 	if(RPM < 1000){
 		gearDown();
 		RPM = 1000;
+		cutOffThrottle = false;
 	}
 	else if( RPM > 6000){
 		gearUp();
 		RPM = 6000;
+		cutOffThrottle = true;
+	}
+	else{
+		cutOffThrottle = false;
 	}
 	RPMc.innerHTML = "RPM: " + RPM;
 	return RPM;
