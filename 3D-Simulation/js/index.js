@@ -247,9 +247,11 @@ function calculateRPM(){
 	RPM = Math.round((velocity/wheelRadius)*gearRatio[gear]*differentialRatio*60/(2*Math.PI));
 	
 	if(RPM < 1000){
+		gearDown();
 		RPM = 1000;
 	}
 	else if( RPM > 6000){
+		gearUp();
 		RPM = 6000;
 	}
 	RPMc.innerHTML = "RPM: " + RPM;
