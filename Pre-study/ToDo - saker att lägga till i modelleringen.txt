@@ -1,5 +1,7 @@
 Saker att modellera:
+över 6000 rpm???
 Däckgrepp
+    Weight distribution(fr/re) 51/49
 Motorbroms
 Lutning
 Koppling
