@@ -10,16 +10,24 @@ var ChooseCamera = 0;
 var clock = new THREE.Clock();
 var time = 0.0;
 
+	var container = document.createElement('div');
+	var Vkmhc = document.getElementById('Vkmh');
+	var timec = document.getElementById('time');
+	var RPMc = document.getElementById('RPM');
+	var Accelerationc = document.getElementById('Acceleration');
+	var Gearc = document.getElementById('Gear');
+	var Throttlec = document.getElementById('Throttle');
+
 var carMass, wheelRadius, airDensity, dragCoefficient, dragArea, netDragCoefficient, rollingResistance, differentialRatio;
-var transmissionEfficiency, gear,gearValues,throttle;
+var transmissionEfficiency, gear,gearRatio,throttle,velocity;
 
 init();
 animate();
 
 
 function init(){
-	container = document.createElement('div');
-	GUI = document.getElementById('time');
+
+
 	document.body.appendChild(container);
 	//Scene
 	scene = new THREE.Scene();
@@ -33,7 +41,7 @@ function init(){
 	
 	renderer = new THREE.WebGLRenderer();
 	renderer.setPixelRatio( window.devicePixelRatio );
-	renderer.setSize( window.innerWidth, window.innerHeight );
+	renderer.setSize( window.innerWidth, window.innerHeight-5 );
 	container.appendChild( renderer.domElement );
 }
 function animate() {
@@ -42,10 +50,15 @@ function animate() {
 }
 function render(){
 	car.position.z -= 0.1;
-
+	prevTime = time;
 	time = time + clock.getDelta();
+	deltatime = time - prevTime 
+	velocity = Velocity(deltatime);
 
-	GUI.innerHTML = gear;
+	Gearc.innerHTML = "gear: " + gear;
+	Vkmhc.innerHTML = "km/h: " + velocity*3.6;
+	timec.innerHTML = "time: " + time;
+	Throttlec.innerHTML = "Throttle: " + throttle;
 	
 	if(ChooseCamera == 0){	
 		renderer.render(scene,camera);
@@ -205,30 +218,52 @@ function carSpecificVariables(){
 	differentialRatio = 3.42;
 	transmissionEfficiency = 0.7;
 	gear = 1;
-	gearValues = [0,2.66,1.78,1.3,1,0.74,0.5];
+	gearRatio = [0,2.66,1.78,1.3,1,0.74,0.5];
 	throttle = 0;
+	velocity = 0.0;
 
 }
 function worldSpecificVariables(){
 	airDensity =1.29;
 }
 function carVariables(){
-	carSpecificVariables();
 	worldSpecificVariables();
+	carSpecificVariables();
+	
 }
 
 // Torque curve
 function engineTorque(RPM){
+
+	return (560)-(0.000025*Math.pow(Math.abs(4400-RPM),2))+(0.000000004*Math.pow(Math.abs(4400-RPM),3)) - (0.02*RPM);
+}
+function Torque(){
+	return throttle*engineTorque(calculateRPM())*differentialRatio*gearRatio[gear]*transmissionEfficiency;
+}
+
+// RPM calculation
+function calculateRPM(){
+
+	RPM = Math.round((velocity/wheelRadius)*gearRatio[gear]*differentialRatio*60/(2*Math.PI));
+	
 	if(RPM < 1000){
 		RPM = 1000;
 	}
 	else if( RPM > 6000){
 		RPM = 6000;
 	}
-	return 560-0.000025*Math.abs(4400-RPM)^2+0.000000004*Math.abs(4400-RPM)^3 - 0.02*RPM;
+	RPMc.innerHTML = "RPM: " + RPM;
+	return RPM;
+
 }
-
-
+function Acceleration(){
+	 a = ((Torque()/wheelRadius)-(dragCoefficient*Math.pow(velocity,2))-(rollingResistance*velocity))/(carMass*wheelRadius);
+	 Accelerationc.innerHTML = "Acceleration (m/s^2): " + a;
+	 return a;
+}
+function Velocity(deltaTime){
+	return velocity + Acceleration() * deltaTime;
+}
 // Change Gear
 function changeGear(i){
 	gear = i;
