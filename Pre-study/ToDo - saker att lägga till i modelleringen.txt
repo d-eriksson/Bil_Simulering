@@ -1,0 +1,7 @@
+Saker att modellera:
+Däckgrepp
+Motorbroms
+Lutning
+Koppling
+Fjädring
+Gravitation

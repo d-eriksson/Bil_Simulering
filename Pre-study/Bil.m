@@ -9,8 +9,6 @@ mass = 1600;
 %m_w = 25;
 % Wheel radius
 wheel_radius = 0.34;
-% Moment of inertia for cylinder
-%I = (m_w*wheelRadius^2)/2;
 
 % Drag calculations
 air_density = 1.29; % Air density (typical)
@@ -37,12 +35,15 @@ current_gear(1) = 1; % Gears are changed automatically at redline (for now)
 gearRatio = gears(current_gear(1));
 
 % --------------- loop here ------------------------
-% Five second loop, sampling interval of Ts
+% Five second loop, time step of Ts
 Ts = 0.001;
 i = 1;
+throttle = 1.0; % User input
 for t = 0:Ts:15
 % temporary hard coded...
-throttle = 1.0; % User input
+if (t==3)
+    throttle = 0;
+end
 
 % Calculate RPM and round it. rpm is used as index for enginge torque later
 % and must be an integer
@@ -78,7 +79,10 @@ Torque = throttle*engineTorque(rpm(i))*differentialRatio*gearRatio*transm_effici
 
 % Calculate wheel force on ground and subtract air resistance and rolling
 % resistance
-Fw(i) = Torque/wheel_radius-Cdrag*velocity(i).^2-cRR*velocity(i);
+Force_rolling = -cRR*velocity(i);
+Force_drag = -Cdrag*velocity(i).^2;
+Force
+Fw(i) = Torque/wheel_radius;
 
 % Calculate acceleration
 acceleration(i) = Fw(i)/(mass*wheel_radius);
