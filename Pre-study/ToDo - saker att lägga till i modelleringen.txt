@@ -7,3 +7,6 @@ Lutning
 Koppling
 Fjädring
 Gravitation
+
+Övriga frågor:
+Tröghetsmomentet för hela bakaxeln och inte bara hjulen?
