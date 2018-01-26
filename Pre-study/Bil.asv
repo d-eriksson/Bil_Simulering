@@ -84,9 +84,9 @@ end
 % Drive torque is torque provided by engine
 drive_torque(i) = throttle*engineTorque(rpm(i))*differentialRatio*gearRatio*transm_efficiency;
 % Traction torque är markens torque på hjulet (motsatt håll än drive torque)
-traction_torque(i) = -Force_traction(i)*wheel_radius;
+traction_torque(i+1) = -Force_traction(i)*wheel_radius;
 % Total torque is the total torque acting on the wheel
-total_torque(i) = drive_torque(i) + traction_torque(i);
+total_torque(i) = drive_torque(i) + traction_torque(i+1);
 
 % ---- WHEEL VEL/ACC ---- %
 angular_acceleration(i) = total_torque(i)/inertia;
@@ -95,9 +95,9 @@ wheel_velocity(i) = angular_velocity(i+1)*wheel_radius;
 
 % ---- SLIP ---- %
 slip_ratio(i) = (wheel_velocity(i)-velocity(i))/velocity(i);
-force_multiplier = 15*slip_ratio(i);
-if(force_multiplier > 0.9)
-    force_multiplier = 0.9;
+force_multiplier = 16.67*slip_ratio(i);
+if(force_multiplier > 1)
+    force_multiplier = 1;
 end
 
 % ---- FORCES ---- %
@@ -135,9 +135,9 @@ xlabel('Time (ms)')
 ylabel('Gear')
 
 subplot(2, 2, 3)
-plot(slip_ratio)
+plot(acceleration)
 xlabel('Time (ms)')
-ylabel('Slip ratio (%)')
+ylabel('Acceleration (m/s^2)')
 
 subplot(2, 2, 4)
 plot(rpm)
