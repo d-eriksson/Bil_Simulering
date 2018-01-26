@@ -9,6 +9,8 @@ var windowHalfY = window.innerHeight / 2;
 var ChooseCamera = 0;
 var clock = new THREE.Clock();
 var time = 0.0;
+var allowRender = false;
+
 
 var container = document.createElement('div');
 var Vkmhc = document.getElementById('Vkmh');
@@ -21,30 +23,32 @@ var rollingResistancec = document.getElementById('rollingResistance');
 var airresistancec = document.getElementById('airresistance');
 
 var carMass, wheelRadius, airDensity, dragCoefficient, dragArea, netDragCoefficient, rollingResistance, differentialRatio;
-var transmissionEfficiency, gear,gearRatio,throttle,velocity, cutOffThrottle;
+var transmissionEfficiency, gear,gearRatio,throttle, breaks,velocity, cutOffThrottle;
 
 init();
 animate();
 
 
+
 function init(){
 
-
 	document.body.appendChild(container);
-	//Scene
-	scene = new THREE.Scene();
-	car = new THREE.Group();
-	carVariables();
-	createWorld();
-	camerarig();
-	loadMTLOBJ('objects/c7/','c7.mtl','c7.obj',0 ,0 ,0,car, 0.053488095);
-	lights();
-	scene.add(car);
-	
 	renderer = new THREE.WebGLRenderer();
 	renderer.setPixelRatio( window.devicePixelRatio );
 	renderer.setSize( window.innerWidth, window.innerHeight-5 );
 	container.appendChild( renderer.domElement );
+	//Scene
+	scene = new THREE.Scene();
+	car = new THREE.Group();
+
+	carVariables();
+	createWorld();
+	camerarig();
+	loadMTLOBJ('objects/c7/','c7.mtl','c7.obj',0 ,0 ,0,car, 0.053488095, -Math.PI/2);
+	lights();
+	scene.add(car);
+
+	initSky();
 }
 function animate() {
 	requestAnimationFrame( animate );
@@ -54,7 +58,7 @@ function render(){
 	
 	prevTime = time;
 	time = time + clock.getDelta();
-	deltatime = time - prevTime 
+	deltatime = time - prevTime;
 	velocity = Velocity(deltatime);
 	car.position.z = car.position.z - velocity*deltatime;
 

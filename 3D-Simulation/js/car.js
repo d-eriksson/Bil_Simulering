@@ -9,19 +9,20 @@ function carSpecificVariables(){
 	rollingResistance = 30* netDragCoefficient;
 	differentialRatio = 3.42;
 	transmissionEfficiency = 0.7;
-	gear = 1;
-	gearRatio = [0,2.66,1.78,1.3,1,0.74,0.5];
+	gearRatio = [3.42,2.66,1.78,1.3,1,0.74,0.5];
 	throttle = 0;
 	velocity = 0.0;
 	cutOffThrottle = false;
-
+	gear = 1;
 }
 function worldSpecificVariables(){
 	airDensity =1.29;
+
 }
 function carVariables(){
 	worldSpecificVariables();
 	carSpecificVariables();
+	
 	
 }
 
@@ -36,8 +37,8 @@ function Torque(){
 
 // RPM calculation
 function calculateRPM(){
-
 	RPM = Math.round((velocity/wheelRadius)*gearRatio[gear]*differentialRatio*60/(2*Math.PI));
+	
 	
 	if(RPM < 1000){
 		gearDown();

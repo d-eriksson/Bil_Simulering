@@ -8,23 +8,11 @@ function createWorld(){
 	scene.add( ground );
 
 	k = 0;
-	while (k < 200){
-		var geometry_box = new THREE.BoxGeometry( 1, 1, 1 );
-		var material_box = new THREE.MeshPhongMaterial( { color: 0xff0000, side: THREE.DoubleSide});
-		var box = new THREE.Mesh( geometry_box, material_box );
-		box.position.x = 2;
-		box.position.z = -10*k -5;
-		box.position.y = 0.5;
-
-		scene.add( box );
-		var box2 = new THREE.Mesh( geometry_box, material_box );
-		box2.position.x = -2;
-		box2.position.z = -10*k -5;
-		box2.position.y = 0.5;
-		scene.add(box2);
+	while (k < 40){
+		loadMTLOBJ('objects/sidewalk/','materials.mtl','model.obj',1, 2 ,-17.5*k,scene, 3, 0 );
 		k++;
 	}
-	i = 0;
+	/*i = 0;
 	while( i < 200){
 		var geometry_ground = new THREE.PlaneGeometry( 4, 10, 8 );
 
@@ -41,6 +29,5 @@ function createWorld(){
 		ground.rotateX(Math.PI/2);
 		scene.add( ground );
 		i++;
-	}
-
+	}*/
 }
