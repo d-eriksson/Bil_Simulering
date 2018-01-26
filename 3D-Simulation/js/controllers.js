@@ -26,7 +26,7 @@ document.addEventListener('keyup', function(e) {
     }
     if(e.keyCode == 32){// Key:space
         ChooseCamera++;
-        if(ChooseCamera > 4){
+        if(ChooseCamera > 5){
         	ChooseCamera = 0;
         }
     }
