@@ -5,19 +5,17 @@ clc
 %% Define Car Parameters
 % Car mass
 mass = 1500;
-g = 9.81;
-load_front_wheels = 0.51*mass*g;
-load_rear_wheels = 0.49*mass*g;
+load_rear_wheels = 0.49*mass*9.81;
 % Wheel radius
 wheel_radius = 0.34;
 % Back wheels inertia (should be entire rear axle)
 mass_back_axis = 200;
 inertia = mass_back_axis*wheel_radius^2*0.5;
+clear mass_back_axis;
 
 % Simulation times
 Ts = 0.001;     % Time step
 duration = 15;  % Duration of simulation
-num_samples = duration/Ts+1;
 
 % Create a slip function
 i=1:1000;
@@ -25,8 +23,10 @@ slip_curve = 1.667*i;
 slip_curve(slip_curve>1) = 1;
 
 % Engine torque curve
-rpm_range = 1000:6000;
-engineTorque(1000:6000) = 560-0.000025*abs(4400-rpm_range).^2+0.000000004*abs(4400-rpm_range).^3-0.02*rpm_range; % --Vad är konstanterna för något?--
+%rpm_range = 1000:6000;
+% hittar på en funktion som ritar en kurva som grafiskt liknar kurvan för corvette C5
+%engineTorque(1000:6000) = 560-0.000025*abs(4400-rpm_range).^2+0.000000004*abs(4400-rpm_range).^3-0.02*rpm_range;
+clear rpm_range;
 
 % Drag calculations
 air_density = 1.29; % Air density (typical)
@@ -34,6 +34,9 @@ cD = 0.3;   % Drag coefficient (car specific)
 drag_area = 1.9; % Drag surface area (car specific)
 Cdrag = 0.5*cD*drag_area*air_density; % Net drag coefficient
 cRR = 30*Cdrag; % Rolling resistance
+clear air_density;
+clear cD;
+clear drag_area;
 
 % Transmission
 gears = [2.66 1.78 1.3 1 0.74 0.5];
@@ -46,43 +49,33 @@ angular_velocity(1) = 0;
 Force_traction(1) = 0;
 current_gear(1) = 1; % Gears are changed automatically at redline (for now)
 gearRatio = gears(1);
+deactivate_throttle = false;
 
 % --------------- loop here ------------------------
 % Five second loop, time step of Ts
 i = 1;
-throttle = 1.0; % User input
 for t = 0:Ts:duration
-% Calculate RPM and round it. rpm is used as index for enginge torque later
-% and must be a positive integer
+
+% Throttle based on user input
+if (deactivate_throttle)
+    throttle = 0.0;
+else
+    throttle = 1.0; % User input
+end
+
+% Calculate RPM and round it. rpm is used as index for enginge torque later and must be a positive integer
 rpm(i) = floor((angular_velocity(i))*gearRatio*differentialRatio*60/(2*pi));
 
-% ----- GEARBOX -----
-if(rpm(i)>=1000 && rpm(i)<=6000)
-    % If rpm is within range, do not switch gears
-    current_gear(i) = current_gear(i-1);
-
-elseif(rpm(i)<1000)
-    % If rpm falls below stalling threshold, pretend rpm is 1000
-    rpm(i) = 1000;
-    % Also change to first gear!
-    current_gear(i) = 1;
-
-elseif(rpm(i)>6000 && current_gear(i-1)<6)       
-    % As long as rpm is above 6000(redline), increase gear
-    current_gear(i) = current_gear(i-1) + 1;
-    % Recalculate rpm after gear change
-    gearRatio = gears(current_gear(i));
-    rpm(i) = floor(angular_velocity(i)*gearRatio*differentialRatio*60/(2*pi));
-
-elseif(rpm(i)>6000)
-    % If the gear is already 6 (max) reset rpm to 6000
-    rpm(i) = 6000;
-    current_gear(i) = current_gear(i-1);
+if(i==1417)
+    i=1417;
 end
+
+% GEARBOX 2.0
+[rpm, current_gear, gearRatio, deactivate_throttle] = gearbox(i, rpm, gears, differentialRatio, current_gear, angular_velocity);
 
 % ---- TORQUE ---- %
 % Drive torque is torque provided by engine
-drive_torque(i) = throttle*engineTorque(rpm(i))*differentialRatio*gearRatio*transm_efficiency;
+drive_torque(i) = throttle*(560-0.000025*abs(4400-rpm(i)).^2+0.000000004*abs(4400-rpm(i)).^3-0.02*rpm(i))*differentialRatio*gearRatio*transm_efficiency;
 % Traction torque är markens torque på hjulet (motsatt håll än drive torque)
 traction_torque(i) = -Force_traction(i)*wheel_radius;
 % Total torque is the total torque acting on the wheel
@@ -98,6 +91,8 @@ slip_ratio(i) = (wheel_velocity(i)-velocity(i))/velocity(i);
 force_multiplier = 15*slip_ratio(i);
 if(force_multiplier > 0.9)
     force_multiplier = 0.9;
+elseif(force_multiplier < -0.9)
+    force_multiplier = -0.9;
 end
 
 % ---- FORCES ---- %

@@ -1,6 +1,8 @@
 Saker att modellera:
-Vad händer över 6000 rpm???
-Bilen accelererar nog för fort pga av att vi inte har en koppling, så hjulen får för mycket torque i början!
+Function call med vektorer (HUR GÖR MAN!?) alla index blir fel :(
+Implemetera koppling
+    Bilen accelererar nog för fort pga av att vi inte har en koppling, så hjulen får för mycket torque i början!
+RPM doubles, not int
 Motorbroms
 Lutning
 Koppling
