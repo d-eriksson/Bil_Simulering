@@ -1,4 +1,4 @@
-function [rpm, current_gear, gearRatio, deactivate_throttle] = gearbox(i, rpm, gears, differentialRatio, current_gear, angular_velocity)
+function [rpm, current_gear, gearRatio, deactivate_throttle] = gearbox(i, rpm, gears, current_gear, angular_velocity)
 % ----- GEARBOX ----- %
 % 1. If rpm is below 1000, fake an rpm of 1000, maybe implement clutch
 % 2. If rpm is within range, do not switch gears (still need to assign one)
@@ -27,7 +27,7 @@ elseif(rpm(i)>6000 && current_gear(i-1)<6)
     current_gear(i) = current_gear(i-1) + 1;
     % Recalculate rpm after gear change
     gearRatio = gears(current_gear(i));
-    rpm(i) = floor(angular_velocity(i)*gearRatio*differentialRatio*60/(2*pi));
+    rpm(i) = angular_velocity(i)*gearRatio*60/(2*pi);
 
 % REDLINE
 elseif(rpm(i)>6000 && current_gear(i-1)==6)

@@ -22,7 +22,9 @@ air_density = 1.29; % Air density (typical)
 cD = 0.3;   % Drag coefficient (car specific)
 drag_area = 1.9; % Drag surface area (car specific)
 Cdrag = 0.5*cD*drag_area*air_density; % Net drag coefficient
-cRR = 30*Cdrag; % Rolling resistance
+%cRR = 30*Cdrag; % Rolling resistance
+% introducing rolling resistance 2.0
+cRR = 0.01*
 clear air_density
 clear cD
 clear drag_area
@@ -55,7 +57,7 @@ else
 end
 
 % Calculate RPM and round it. rpm is used as index for enginge torque later and must be a positive integer
-rpm(i) = (angular_velocity(i))*gearRatio*60/(2*pi);
+rpm(i) = floor((angular_velocity(i))*gearRatio*60/(2*pi));
 
 if(i==1417)
     i=1417;
