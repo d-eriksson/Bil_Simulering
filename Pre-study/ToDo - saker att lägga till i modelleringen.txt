@@ -1,5 +1,6 @@
 Saker att modellera:
 Modellera rolling resistance bättre
+Friktion får inte accelerera bilen från stillastående
 Implemetera koppling
     Bilen accelererar nog för fort pga av att vi inte har en koppling, så hjulen får för mycket torque i början!
 Motorbroms

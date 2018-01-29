@@ -22,7 +22,9 @@ air_density = 1.29; % Air density (typical)
 cD = 0.3;   % Drag coefficient (car specific)
 drag_area = 1.9; % Drag surface area (car specific)
 Cdrag = 0.5*cD*drag_area*air_density; % Net drag coefficient
-cRR = 30*Cdrag; % Rolling resistance
+% cRR = 30*Cdrag; % Rolling resistance
+% New rolling resistance defined in the loop
+
 clear air_density
 clear cD
 clear drag_area
@@ -46,7 +48,6 @@ deactivate_throttle = false;
 % Five second loop, time step of Ts
 i = 1;
 for t = 0:Ts:duration
-
 % Throttle based on user input
 if (deactivate_throttle)
     throttle = 0.0;
@@ -57,10 +58,6 @@ end
 % Calculate RPM and round it. rpm is used as index for enginge torque later and must be a positive integer
 rpm(i) = (angular_velocity(i))*gearRatio*60/(2*pi);
 
-if(i==1417)
-    i=1417;
-end
-
 % GEARBOX 2.0
 [rpm, current_gear, gearRatio, deactivate_throttle] = gearbox(i, rpm, gears, current_gear, angular_velocity);
 
@@ -68,9 +65,12 @@ end
 % Drive torque is torque provided by engine
 drive_torque(i) = throttle*(560-0.000025*abs(4400-rpm(i)).^2+0.000000004*abs(4400-rpm(i)).^3-0.02*rpm(i))*gearRatio*transm_efficiency;
 % Traction torque är markens torque på hjulet (motsatt håll än drive torque)
-traction_torque(i) = -Force_traction(i)*wheel_radius;
+traction_torque(i) = Force_traction(i)*wheel_radius;
 % Total torque is the total torque acting on the wheel
-total_torque(i) = drive_torque(i) + traction_torque(i);
+total_torque(i) = drive_torque(i) - traction_torque(i);
+% NEW ROLLING RESISTANCE, tyre pressure 2.41 bar
+rolling_torque(i) = min(abs(total_torque(i)), abs((0.005 + 0.414938*(0.01+0.00019*velocity(i)))*mass*9.81*wheel_radius));
+total_torque(i) = total_torque(i)-rolling_torque(i);
 
 % ---- WHEEL VEL/ACC ---- %
 angular_acceleration(i) = total_torque(i)/inertia;
@@ -90,11 +90,11 @@ end
 % Propelling forces
 Force_traction(i+1) = force_multiplier*load_rear_wheels;
 % Resistive forces
-Force_rolling = -cRR*velocity(i);
-Force_drag = -Cdrag*velocity(i).^2;
+% Force_rolling = -cRR*velocity(i);
+Force_drag = Cdrag*velocity(i).^2;
 
 % Slutgiltig kraft på bil
-Force_net(i) = Force_traction(i+1) + Force_rolling + Force_drag;
+Force_net(i) = Force_traction(i+1) - Force_drag;
 
 % Calculate acceleration
 acceleration(i) = Force_net(i)/(mass*wheel_radius);
