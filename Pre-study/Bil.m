@@ -58,7 +58,7 @@ wheel_velocity = zeros(1, samples);
 % Five second loop, time step of Ts
 i = 1;
 for t = 0:Ts:duration
-% Throttle based on user input
+% Throttle should be based on user input
 if (deactivate_throttle)
     throttle = 0.0;
 else
