@@ -27,12 +27,13 @@ differentialRatio = 3.42;
 % Include the differential ratio into the gears
 gears = gears*differentialRatio;
 transm_efficiency = 0.7;
+clutch_level = 1;
 clear differentialRatio
 
 % SIMULATION SETTINGS
-Ts = 0.001;     % Time step
-duration = 15;  % Duration of simulation
-samples = 15001;% Number of samples, used to preallocate arrays
+Ts = 0.001;             % Time step
+duration = 15;          % Duration of simulation
+samples = 1+duration/Ts;  % Number of samples, used to preallocate arrays
 
 % RESOLVE INITIAL CONDITIONS
 velocity = zeros(1,samples+1);
@@ -53,35 +54,36 @@ slip_ratio = zeros(1, samples);
 total_torque = zeros(1, samples);
 traction_torque = zeros(1, samples);
 wheel_velocity = zeros(1, samples);
+gearing_bool = zeros(1, samples);
 
 % --------------- loop here ------------------------
 % Five second loop, time step of Ts
 i = 1;
 for t = 0:Ts:duration
-% Throttle should be based on user input
-if (deactivate_throttle)
+% Throttle is turned off if
+% 1. 
+if (deactivate_throttle || gearing_bool(i)==1)
     throttle = 0.0;
 else
     throttle = 1.0; % User input
 end
 
 % Calculate RPM and round it. rpm is used as index for enginge torque later and must be a positive integer
-rpm(i) = (angular_velocity(i))*gearRatio*60/(2*pi);
+rpm(i) = (angular_velocity(i))*gearRatio*60/(2*pi*clutch_level);
 
 % GEARBOX 2.0
-[rpm, current_gear, gearRatio, deactivate_throttle] = gearbox(i, rpm, gears, current_gear, angular_velocity);
+[rpm, current_gear, gearRatio, deactivate_throttle, clutch_level, gearing_bool] = gearbox(i, rpm, gears, current_gear, angular_velocity, gearing_bool);
 
 % ---- TORQUE ---- %
 % Drive torque is torque provided by engine
-drive_torque(i) = throttle*(560-0.000025*abs(4400-rpm(i)).^2+0.000000004*abs(4400-rpm(i)).^3-0.02*rpm(i))*gearRatio*transm_efficiency;
+drive_torque(i) = clutch_level*throttle*(560-0.000025*abs(4400-rpm(i)).^2+0.000000004*abs(4400-rpm(i)).^3-0.02*rpm(i))*gearRatio*transm_efficiency;
 % Traction torque är markens torque på hjulet (motsatt håll än drive torque)
 traction_torque(i) = Force_traction(i)*wheel_radius;
 % Total torque is the total torque acting on the wheel
 total_torque(i) = drive_torque(i) - traction_torque(i);
-% NEW ROLLING RESISTANCE, (0.005 + 0.414938*(0.01+0.00019*velocity(i))) is
-% the coefficient with tyre pressure 2.41 bar. The coefficient is
-% multiplied by the 
-rolling_torque(i) = min(abs(total_torque(i)), abs((0.005 + 0.414938*(0.01+0.00019*velocity(i)))*mass*9.81*wheel_radius));
+% NEW ROLLING RESISTANCE, 0.414938*(0.01+0.00019*velocity(i)) is the
+% coefficient with tyre pressure 2.41 bar.
+rolling_torque(i) = (0.414938*(0.01+0.00019*velocity(i)))*mass*9.81*wheel_radius;
 total_torque(i) = total_torque(i)-rolling_torque(i);
 
 % ---- WHEEL VEL/ACC ---- %
@@ -90,13 +92,20 @@ angular_velocity(i+1) = angular_velocity(i) + angular_acceleration(i)*Ts;
 wheel_velocity(i) = angular_velocity(i+1)*wheel_radius;
 
 % ---- SLIP ---- %
-slip_ratio(i) = (wheel_velocity(i)-velocity(i))/velocity(i);
-force_multiplier = 15*slip_ratio(i);
-if(force_multiplier > 0.9)
-    force_multiplier = 0.9;
-elseif(force_multiplier < -0.9)
-    force_multiplier = -0.9;
+slip_ratio(i) = (wheel_velocity(i)-velocity(i))/abs(velocity(i));
+
+%If slip ratio is positive (forward)
+if(slip_ratio(i)>=0 && slip_ratio(i)<=0.06)
+     force_multiplier = 1-16.67*abs((0.06-slip_ratio(i)));
+elseif(slip_ratio(i)>0.06)
+     force_multiplier = 0.5+0.5*0.06/slip_ratio(i);
+% If slip ratio is negative (backwards)
+elseif(slip_ratio(i)>=-0.06 && slip_ratio(i)<=0)
+     force_multiplier = -1+16.67*abs((0.06+slip_ratio(i)));
+elseif(slip_ratio(i)<-0.06)
+    force_multiplier = -0.5+0.5*0.06/slip_ratio(i);
 end
+    
 
 % ---- FORCES ---- %
 % Propelling forces
@@ -136,6 +145,7 @@ subplot(2, 2, 3)
 plot(slip_ratio*100)
 xlabel('Time (ms)')
 ylabel('Slip ratio (%)')
+axis([0 samples -1000 1000])
 
 subplot(2, 2, 4)
 plot(rpm)
