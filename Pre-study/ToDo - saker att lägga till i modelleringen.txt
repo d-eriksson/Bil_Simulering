@@ -1,13 +1,11 @@
 Saker att modellera:
-Modellera rolling resistance bättre
-Friktion får inte accelerera bilen från stillastående
+Broms
 Motorbroms
-    Cylinderkompressions påverkan..?
+Allt måste fungera både framåt och bakåt
+Weight transfer
 Lutning
 Fjädring
-Gravitation
+Differential
 
-Övriga frågor (till Ulf):
-Hur modellerar vi tröghetsmomentet för bakhjulen/bakaxeln?
-Hur modellerar vi en differentialväxeln?
-Hur modellerar vi motorbroms?
+Övrigt:
+
