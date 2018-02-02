@@ -23,7 +23,7 @@ var rollingResistancec = document.getElementById('rollingResistance');
 var airresistancec = document.getElementById('airresistance');
 
 var carMass, wheelRadius, airDensity, dragCoefficient, dragArea, netDragCoefficient, rollingResistance, differentialRatio;
-var transmissionEfficiency, gear,gearRatio,throttle, breaks,velocity, cutOffThrottle;
+var transmissionEfficiency, gear,gearRatio,throttle, breaks,velocity, cutOffThrottle, angularvelocity;
 
 init();
 animate();
@@ -42,7 +42,7 @@ function init(){
   	renderer.shadowMapSoft = true;
   	//renderer.autoClear = false;
 	container.appendChild( renderer.domElement );
-
+	
 
 	//Scene
 	scene = new THREE.Scene();
@@ -71,7 +71,8 @@ function render(){
 	prevTime = time;
 	time = time + clock.getDelta();
 	deltatime = time - prevTime;
-	velocity = Velocity(deltatime);
+
+	velocity = Velocity();
 	car.position.z = car.position.z - velocity*deltatime;
 
 	Gearc.innerHTML = "gear: " + gear;

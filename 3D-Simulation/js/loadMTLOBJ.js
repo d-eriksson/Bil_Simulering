@@ -10,6 +10,6 @@ function loadMTLOBJ( basepath, mtlname, objname, x, y, z, group, scale, rotX){
 			object.position.set(x,y,z);
 			object.scale.set(scale,scale,scale);
 			group.add(object);
-		}, function(success){console.log("success")}, function(err){console.log(err)});
+		}, function(success){}, function(err){});
 	});
 }
