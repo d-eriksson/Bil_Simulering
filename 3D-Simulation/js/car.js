@@ -23,13 +23,15 @@ function carSpecificVariables(){
 	gear = 1;
 
 	//misc
-	throttle = 0;
+	throttle = 0.0;
+	breaks = 0.0;
 	velocity = 0.0;
 	angularvelocity = 0.0;
 	cutOffThrottle = false;
 	rollingResistance = 30* netDragCoefficient;
 	forcetraction = 0;
 	clutchLevel = 1.0;
+	RPM = 0;
 
 }
 function worldSpecificVariables(){
@@ -45,14 +47,22 @@ function carVariables(){
 
 // Calculates velocity based on acceleration
 function Velocity(){
-	return velocity + Acceleration() * deltatime;
+
+	velocity = velocity + Acceleration()*deltatime;
+	/*if(velocity > 0.0005 || throttle > 0.0){
+	}
+	else{
+		velocity = 0;
+	}*/
+
+	return velocity;
 
 }
 // Calculates acceleration based on torque
 function Acceleration(){
 	 a = forceNet()/(carMass*wheelRadius);
 	 
-	 Accelerationc.innerHTML = "Acceleration (m/s^2): " + a;
+	 Accelerationc.innerHTML = "Acceleration (kmh): " + a*3.6;
 	 rollingResistancec.innerHTML = "rollingResistance: " + (rollingResistance*velocity);
 	 airresistancec.innerHTML = "airresistance: " + (dragCoefficient*Math.pow(velocity,2));
 	 //console.log("2: " + a);
@@ -75,7 +85,7 @@ function forceMultiplier(){
 	var slipRatio;
 	var FM;
 	if (velocity == 0.0){
-		slipRatio = 10000000000;
+		slipRatio = 1;
 		if(throttle == 0.0){
 			FM = 0;
 			return FM;
@@ -101,41 +111,70 @@ function forceMultiplier(){
 		}
 	}
 	
-
-	console.log(slipRatio*100);
+	if(Math.abs(slipRatio) > 0.6){
+		bromsc.style.backgroundColor = "red";
+	}
+	else{
+		bromsc.style.backgroundColor = "black";
+	}
+	//console.log("velocity: " + velocity*3.6 + "SlipRatio: " + slipRatio*100);
 	return FM;
 }
 
 function wheelVelocity(){
-	return angularVelocity() * wheelRadius;
+	WV = angularVelocity() * wheelRadius;
+	if(Math.abs(WV) < 1.0){
+		WV = 0;
+	}
+	wheelvelocityc.innerHTML = "Wheel Velocity: " + (WV*3.6);
+	return WV;
 }
 function angularVelocity(){
 	angularvelocity = angularvelocity + angularAcceleration()*deltatime;
+	
 	return angularvelocity;
 }
 function angularAcceleration(){
-	return totalTorque()/inertia;
+
+	TotTorque = driveTorque() - tractionTorque() - rollingTorque() - brakingTorque() - engineBrakingTorque();
+	angAccel = TotTorque/inertia;
+	if(angularvelocity + angAccel *deltatime < 0){
+		TotTorque = -1*angularvelocity*inertia/deltatime;
+	}
+	angAccel = TotTorque/inertia;
+	//console.log(TotTorque);
+	return angAccel;
 }
-function totalTorque(){
-	return driveTorque() - tractionTorque() - rollingTorque();
+function brakingTorque(){
+	if (angularvelocity > 5){
+		return 6000*breaks;
+	}
+	else if(angularvelocity < -5){
+		return -6000*breaks;
+	}
+	else{
+		return angularvelocity*1200*breaks;
+	}
+}
+function engineBrakingTorque(){
+	if(throttle > 0.0){
+		return 0.0;
+	}
+	else{
+		return 0.02*calculateRPM();
+	}
 }
 function driveTorque(){
-	return clutchLevel*throttle*engineTorque(calculateRPM())*gearRatio[gear]*transmissionEfficiency;
+	DT = clutchLevel*throttle*engineTorque(calculateRPM())*gearRatio[gear]*transmissionEfficiency;
+	//console.log(DT);
+	return DT;
 }
 function tractionTorque(){
 	return forcetraction * wheelRadius;
 }
 
 function rollingTorque(){
-
-	var ABSDTTorque = Math.abs(driveTorque()-tractionTorque());
-	var rollingTorque = Math.abs((0.414938*(0.01+0.00019*velocity))*carMass*9.81*wheelRadius);
-	if(ABSDTTorque < rollingTorque){
-		return ABSDTTorque;
-	}
-	else{
-		return rollingTorque;
-	}
+	return 0.414938*0.00019*velocity*carMass*9.81*wheelRadius;
 }
 
 // Torque curve
@@ -149,13 +188,17 @@ function calculateRPM(){
 	//console.log(angularvelocity);
 	RPM = Math.round((angularvelocity)*gearRatio[gear]*60/(2*Math.PI));
 	if(RPM < 1000){
-		gearDown();
+		if(automatic){
+			gearDown();
+		}
 		clutchLevel = 0.5 + 0.5*RPM/2000;
 		RPM = 1000;
 		cutOffThrottle = false;
 	}
 	else if( RPM > 6000){
-		gearUp();
+		if(automatic){
+			gearUp();
+		}
 		RPM = 6000;
 		cutOffThrottle = true;
 	}

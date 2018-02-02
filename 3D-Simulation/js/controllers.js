@@ -5,14 +5,24 @@ document.addEventListener('keydown', function(e) {
     else{
     	throttle = 0.0;
     }
+    if(e.keyCode == 83){// Key:s
+        breaks = 1.0; 
+    }
     if(e.keyCode == 38){// Key:upArrow
     	gearUp();
     }
     if(e.keyCode == 40){// Key:downArrow
     	gearDown();
     }
-    if(e.keyCode == 83){// Key:s
-        breaks = 1.0;
+    if(e.keyCode == 81) // Key: q
+    {
+        automatic = !automatic;
+        if(automatic){
+            transmissionc.innerHTML = "Transmission: Automatic";
+        }
+        else{
+            transmissionc.innerHTML = "Transmission: Manual";
+        }
     }
 
     

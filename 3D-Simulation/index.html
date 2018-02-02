@@ -7,6 +7,8 @@
 			body { margin: 0; }
 			canvas { width: 100%; height: 100% }
 			.GUI{ width:100%; height: 100%; position: absolute; top:0; left:0; z-index: 99; color:white;}
+			#broms{height: 115px;width:100px;background-color:black;position: fixed; right:10px; bottom:10px;}
+			.img{width:100%;}
 		</style>
 	</head>
 	<body>
@@ -14,11 +16,16 @@
 			<p id="time"></p>
 			<p id="Gear"></p>
 			<p id="Vkmh"></p>
+			<p id="wheelvelocity"></p>
 			<p id="RPM"></p>
 			<p id="Acceleration"></p>
 			<p id="Throttle"></p>
+			<p id="breaking"></p>
 			<p id="rollingResistance"></p>
 			<p id="airresistance"></p>
+			<p id="transmission">Transmission: Automatic</p>
+			<div id="broms"><img src="broms.png" class="img"/></div>
+
 		</div>
 		<script src="http://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha256-3edrmyuQ0w65f8gfBsqowzjJe2iM6n0nKciPUp8y+7E=" crossorigin="anonymous"></script>
 		<script src="node_modules/three/build/three.js"></script>

@@ -19,11 +19,16 @@ var RPMc = document.getElementById('RPM');
 var Accelerationc = document.getElementById('Acceleration');
 var Gearc = document.getElementById('Gear');
 var Throttlec = document.getElementById('Throttle');
+var breakingc = document.getElementById('breaking');
 var rollingResistancec = document.getElementById('rollingResistance');
 var airresistancec = document.getElementById('airresistance');
+var transmissionc = document.getElementById('transmission');
+var wheelvelocityc = document.getElementById('wheelvelocity');
+var bromsc = document.getElementById('broms');
 
 var carMass, wheelRadius, airDensity, dragCoefficient, dragArea, netDragCoefficient, rollingResistance, differentialRatio;
-var transmissionEfficiency, gear,gearRatio,throttle, breaks,velocity, cutOffThrottle, angularvelocity;
+var transmissionEfficiency, gear,gearRatio,throttle, breaks,velocity, cutOffThrottle, angularvelocity,RPM;
+var automatic = true;
 
 init();
 animate();
@@ -79,6 +84,7 @@ function render(){
 	Vkmhc.innerHTML = "km/h: " + velocity*3.6;
 	timec.innerHTML = "time: " + time;
 	Throttlec.innerHTML = "Throttle: " + throttle;
+	breakingc.innerHTML = "Breaking: " + breaks;
 	
 	if(ChooseCamera == 0){	
 		renderer.render(scene,camera);
