@@ -1,7 +1,5 @@
 Saker att modellera:
-Broms
-Motorbroms
-Allt måste fungera både framåt och bakåt
+Force multiplier blir negativ vid hastighet 0!!!
 Weight transfer
 Lutning
 Fjädring

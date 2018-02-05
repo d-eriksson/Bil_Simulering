@@ -5,7 +5,10 @@ clc
 %% Define Car Parameters
 % Car mass
 mass = 1500;
-load_rear_wheels = 0.49*mass*9.81;
+normal_force = zeros (1, 15001);
+normal_force(1) = 0.49*9.81*mass;
+wheelbase = 2.654;
+CoG_height = 0.381;
 wheel_radius = 0.34;
 % Back wheels inertia (should be entire rear axle)
 mass_back_axis = 200;
@@ -44,13 +47,14 @@ current_gear = ones(1,samples); % Gears are changed automatically at redline (fo
 gearRatio = gears(1);
 deactivate_throttle = false;
 braking_level = 0;
+engine_braking_torque = 0;
 
 % MEMORY PREALLOCATION
 acceleration = zeros(1, samples);
 angular_acceleration = zeros(1, samples);
 drive_torque = zeros(1, samples);
 Force_net = zeros(1, samples);
-rolling_torque = zeros(1, samples);
+rolling_resistance_torque = zeros(1, samples);
 rpm = zeros(1, samples);
 slip_ratio = zeros(1, samples);
 total_torque = zeros(1, samples);
@@ -62,23 +66,27 @@ gearing_bool = zeros(1, samples);
 % Five second loop, time step of Ts
 i = 1;
 for t = 0:Ts:duration
-% Throttle is turned off if
-% 1. RPM is 6000 and gear is max
-% 2. For 200 ms after switching gear
-% 3. When breaking is applied
-
-if(i>5000)
-    braking_level = min(1, 0.001*i);
-end
-
-if (deactivate_throttle || gearing_bool(i)==1 || braking_level>0)
-    throttle = 0.0;
-else
-    throttle = 1.0; % User input
-end
 
 % Calculate RPM and round it. rpm is used as index for enginge torque later and must be a positive integer
 rpm(i) = (angular_velocity(i))*gearRatio*60/(2*pi*clutch_level);
+
+
+if(i>2000)
+    braking_level = min(1, 0.005*i);
+    deactivate_throttle = true;
+end
+
+% Throttle is turned off if:
+% 1. RPM is 6000 and gear is max
+% 2. For 200 ms after switching gear
+% 3. When breaking is applied
+if (deactivate_throttle == true || gearing_bool(i)==1 || braking_level>0)
+    throttle = 0.0;
+    engine_braking_torque = 0.01*rpm(i);
+else
+    throttle = 1.0; % User input
+    engine_braking_torque = 0;
+end
 
 % GEARBOX 2.0
 [rpm, current_gear, gearRatio, deactivate_throttle, clutch_level, gearing_bool] = gearbox(i, rpm, gears, current_gear, angular_velocity, gearing_bool);
@@ -92,15 +100,13 @@ traction_torque(i) = Force_traction(i)*wheel_radius;
 total_torque(i) = drive_torque(i) - traction_torque(i);
 % NEW ROLLING RESISTANCE, 0.414938*(0.01+0.00019*velocity(i)) is the
 % coefficient with tyre pressure 2.41 bar.
-rolling_torque(i) = (0.414938*(0.01+0.00019*velocity(i)))*mass*9.81*wheel_radius;
+rolling_resistance_torque(i) = (0.414938*0.00019*velocity(i))*mass*9.81*wheel_radius;
 % Bromskraft
-total_torque(i) = total_torque(i)-rolling_torque(i);
-if(i>1 && wheel_velocity(i-1)>1)
-    total_torque(i) = total_torque(i)-3000*braking_level;
-elseif(i>1 && wheel_velocity(i-1)<1)
-    total_torque(i) = total_torque(i)+3000*braking_level;
-else
-    total_torque(i) = total_torque(i);
+total_torque(i) = total_torque(i)-rolling_resistance_torque(i)-engine_braking_torque;
+if(angular_velocity(i)>5)
+    total_torque(i) = total_torque(i)-4000*braking_level;
+elseif(angular_velocity(i)<-5)
+    total_torque(i) = total_torque(i)+4000*braking_level;
 end
 % ---- WHEEL VEL/ACC ---- %
 angular_acceleration(i) = total_torque(i)/inertia;
@@ -120,11 +126,10 @@ elseif(slip_ratio(i)>=-0.06 && slip_ratio(i)<=0)
 elseif(slip_ratio(i)<-0.06)
     force_multiplier = -0.5+0.5*0.06/slip_ratio(i);
 end
-    
 
 % ---- FORCES ---- %
 % Propelling forces
-Force_traction(i+1) = force_multiplier*load_rear_wheels;
+Force_traction(i+1) = force_multiplier*normal_force(i);
 % Resistive forces
 Force_drag = Cdrag*velocity(i).^2;
 % Slutgiltig kraft på bil
@@ -133,6 +138,9 @@ Force_net(i) = Force_traction(i+1) - Force_drag;
 acceleration(i) = Force_net(i)/(mass*wheel_radius);
 % Calculate velocity
 velocity(i+1) = velocity(i) + acceleration(i)*Ts;
+
+% Calculated normal force on rear wheels
+normal_force(i+1) = 0.49*mass*9.81 + CoG_height/wheelbase*mass*acceleration(i);
 
 i = i+1;
 end
@@ -156,7 +164,7 @@ subplot(2, 2, 3)
 plot(slip_ratio*100)
 xlabel('Time (ms)')
 ylabel('Slip ratio (%)')
-axis([0 samples -1000 1000])
+axis([0 samples -50 50])
 
 subplot(2, 2, 4)
 plot(rpm)
