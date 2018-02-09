@@ -1,11 +1,16 @@
 %% Reset simulation
 close all
-clear all
+clear
 clc
 %% Define Car Parameters
+% SIMULATION SETTINGS
+Ts = 0.001;             % Time step
+duration = 20;          % Duration of simulation
+samples = 1+duration/Ts;  % Number of samples, used to preallocate arrays
+
 % Car mass
 mass = 1500;
-normal_force = zeros (1, 15001);
+normal_force = zeros (1, samples);
 normal_force(1) = 0.49*9.81*mass;
 wheelbase = 2.654;
 CoG_height = 0.381;
@@ -33,11 +38,6 @@ gears = gears*differentialRatio;
 transm_efficiency = 0.7;
 clutch_level = 1;
 clear differentialRatio
-
-% SIMULATION SETTINGS
-Ts = 0.001;             % Time step
-duration = 15;          % Duration of simulation
-samples = 1+duration/Ts;  % Number of samples, used to preallocate arrays
 
 % RESOLVE INITIAL CONDITIONS
 velocity = zeros(1,samples+1);
@@ -70,11 +70,11 @@ for t = 0:Ts:duration
 % Calculate RPM and round it. rpm is used as index for enginge torque later and must be a positive integer
 rpm(i) = (angular_velocity(i))*gearRatio*60/(2*pi*clutch_level);
 
-
-if(i>2000)
-    braking_level = min(1, 0.005*i);
-    deactivate_throttle = true;
-end
+% 
+% if(i>2000)
+%     braking_level = min(1, 0.005*i);
+%     deactivate_throttle = true;
+% end
 
 % Throttle is turned off if:
 % 1. RPM is 6000 and gear is max
@@ -145,28 +145,55 @@ normal_force(i+1) = 0.49*mass*9.81 + CoG_height/wheelbase*mass*acceleration(i);
 i = i+1;
 end
 
-% Convert to km/h
-Vkmh = velocity*3.6;
-
 % Show figures
 figure
-subplot(2, 2, 1)
-plot(Vkmh)
+subplot(2, 5, 1)
+plot(velocity(:, 1:samples-1)*3.6)
 xlabel('Time (ms)')
 ylabel('Velocity (km/h)')
 
-subplot(2, 2, 2)
-plot(current_gear)
+subplot(2, 5, 2)
+plot(acceleration(:, 1:samples-1))
+xlabel('Time (ms)')
+ylabel('Acceleration (m/s^2)')
+
+subplot(2, 5, 3)
+plot(wheel_velocity(:, 1:samples-1)*3.6)
+xlabel('Time (ms)')
+ylabel('Wheel velocity (km/h)')
+
+subplot(2, 5, 4)
+plot(rpm(:, 1:samples-1))
+xlabel('Time (ms)')
+ylabel('RPM')
+
+subplot(2, 5, 5)
+plot(current_gear(:, 1:samples-1))
 xlabel('Time (ms)')
 ylabel('Gear')
 
-subplot(2, 2, 3)
-plot(slip_ratio*100)
+subplot(2, 5, 6)
+plot(slip_ratio(:, 1:samples-1)*100)
 xlabel('Time (ms)')
 ylabel('Slip ratio (%)')
 axis([0 samples -50 50])
 
-subplot(2, 2, 4)
-plot(rpm)
+subplot(2, 5, 7)
+plot(drive_torque(:, 1:samples-1))
 xlabel('Time (ms)')
-ylabel('RPM')
+ylabel('Drive Torque (Nm)')
+
+subplot(2, 5, 8)
+plot(Force_traction(:, 1:samples-1))
+xlabel('Time (ms)')
+ylabel('Drag Force (Nm)')
+
+subplot(2, 5, 9)
+plot(Force_net(:, 1:samples-1))
+xlabel('Time (ms)')
+ylabel('Net Force (Nm)')
+
+subplot(2, 5, 10)
+plot(drive_torque(:, 1:samples-1))
+xlabel('Time (ms)')
+ylabel('Drive Torque (Nm)')

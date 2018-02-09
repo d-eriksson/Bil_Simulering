@@ -1,6 +1,4 @@
 Saker att modellera:
-Force multiplier blir negativ vid hastighet 0!!!
-Weight transfer
 Lutning
 Fjädring
 Differential
