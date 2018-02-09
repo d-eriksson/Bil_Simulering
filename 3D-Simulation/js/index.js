@@ -13,17 +13,8 @@ var allowRender = false;
 var WIDTH, HEIGHT;
 
 var container = document.createElement('div');
-var Vkmhc = document.getElementById('Vkmh');
-var timec = document.getElementById('time');
-var RPMc = document.getElementById('RPM');
-var Accelerationc = document.getElementById('Acceleration');
-var Gearc = document.getElementById('Gear');
-var Throttlec = document.getElementById('Throttle');
-var breakingc = document.getElementById('breaking');
-var rollingResistancec = document.getElementById('rollingResistance');
-var airresistancec = document.getElementById('airresistance');
-var transmissionc = document.getElementById('transmission');
-var wheelvelocityc = document.getElementById('wheelvelocity');
+
+
 var bromsc = document.getElementById('broms');
 
 var carMass, wheelRadius, airDensity, dragCoefficient, dragArea, netDragCoefficient, rollingResistance, differentialRatio;
@@ -37,16 +28,17 @@ animate();
 
 function init(){
 	WIDTH = window.innerWidth;
-  	HEIGHT = window.innerHeight-5;
+  	HEIGHT = window.innerHeight;
 
 	document.body.appendChild(container);
 	renderer = new THREE.WebGLRenderer({ antialias: false } );
-	renderer.setPixelRatio( window.devicePixelRatio );
+	//renderer.setPixelRatio( window.devicePixelRatio );
 	renderer.setSize( WIDTH,HEIGHT );
 	renderer.shadowMap.enabled;
   	renderer.shadowMapSoft = true;
   	//renderer.autoClear = false;
 	container.appendChild( renderer.domElement );
+	renderer.domElement.style.display = "block";
 	
 
 	//Scene
@@ -56,12 +48,12 @@ function init(){
   	// scene.fog = new THREE.Fog(0x000000, 0.1, 1000);
 	car = new THREE.Group();
 
-	carVariables();
 	createWorld();
 	camerarig();
 	loadMTLOBJ('objects/c7/','c7.mtl','c7.obj',0 ,0 ,0,car, 0.053488095, -Math.PI/2);
 	lights();
 	initPostProcessing();
+	c7 = new Car(car ,1600, 0.34, 200, 0.3, 1.9, 3.42, 0.7, true);
 	scene.add(car);
 
 	initSky();
@@ -76,15 +68,10 @@ function render(){
 	prevTime = time;
 	time = time + clock.getDelta();
 	deltatime = time - prevTime;
-
-	velocity = Velocity();
-	car.position.z = car.position.z - velocity*deltatime;
-
-	Gearc.innerHTML = "gear: " + gear;
-	Vkmhc.innerHTML = "km/h: " + velocity*3.6;
-	timec.innerHTML = "time: " + time;
-	Throttlec.innerHTML = "Throttle: " + throttle;
-	breakingc.innerHTML = "Breaking: " + breaks;
+	//if(time > 20){
+		c7.update(deltatime);
+	//}
+	
 	
 	if(ChooseCamera == 0){	
 		renderer.render(scene,camera);
