@@ -61,25 +61,17 @@ total_torque = zeros(1, samples);
 traction_torque = zeros(1, samples);
 wheel_velocity = zeros(1, samples);
 gearing_bool = zeros(1, samples);
+Force_drag = zeros(1, samples);
 
 % --------------- loop here ------------------------
 % Five second loop, time step of Ts
 i = 1;
 for t = 0:Ts:duration
-
-% Calculate RPM and round it. rpm is used as index for enginge torque later and must be a positive integer
+    
+% Calculate RPM
 rpm(i) = (angular_velocity(i))*gearRatio*60/(2*pi*clutch_level);
 
-% 
-% if(i>2000)
-%     braking_level = min(1, 0.005*i);
-%     deactivate_throttle = true;
-% end
-
-% Throttle is turned off if:
-% 1. RPM is 6000 and gear is max
-% 2. For 200 ms after switching gear
-% 3. When breaking is applied
+% Check Throttle
 if (deactivate_throttle == true || gearing_bool(i)==1 || braking_level>0)
     throttle = 0.0;
     engine_braking_torque = 0.01*rpm(i);
@@ -88,7 +80,7 @@ else
     engine_braking_torque = 0;
 end
 
-% GEARBOX 2.0
+% GEARBOX
 [rpm, current_gear, gearRatio, deactivate_throttle, clutch_level, gearing_bool] = gearbox(i, rpm, gears, current_gear, angular_velocity, gearing_bool);
 
 % ---- TORQUE ---- %
@@ -131,9 +123,9 @@ end
 % Propelling forces
 Force_traction(i+1) = force_multiplier*normal_force(i);
 % Resistive forces
-Force_drag = Cdrag*velocity(i).^2;
+Force_drag(i) = Cdrag*velocity(i).^2;
 % Slutgiltig kraft på bil
-Force_net(i) = Force_traction(i+1) - Force_drag;
+Force_net(i) = Force_traction(i+1) - Force_drag(i);
 % Calculate acceleration
 acceleration(i) = Force_net(i)/(mass*wheel_radius);
 % Calculate velocity
@@ -145,55 +137,4 @@ normal_force(i+1) = 0.49*mass*9.81 + CoG_height/wheelbase*mass*acceleration(i);
 i = i+1;
 end
 
-% Show figures
-figure
-subplot(2, 5, 1)
-plot(velocity(:, 1:samples-1)*3.6)
-xlabel('Time (ms)')
-ylabel('Velocity (km/h)')
-
-subplot(2, 5, 2)
-plot(acceleration(:, 1:samples-1))
-xlabel('Time (ms)')
-ylabel('Acceleration (m/s^2)')
-
-subplot(2, 5, 3)
-plot(wheel_velocity(:, 1:samples-1)*3.6)
-xlabel('Time (ms)')
-ylabel('Wheel velocity (km/h)')
-
-subplot(2, 5, 4)
-plot(rpm(:, 1:samples-1))
-xlabel('Time (ms)')
-ylabel('RPM')
-
-subplot(2, 5, 5)
-plot(current_gear(:, 1:samples-1))
-xlabel('Time (ms)')
-ylabel('Gear')
-
-subplot(2, 5, 6)
-plot(slip_ratio(:, 1:samples-1)*100)
-xlabel('Time (ms)')
-ylabel('Slip ratio (%)')
-axis([0 samples -50 50])
-
-subplot(2, 5, 7)
-plot(drive_torque(:, 1:samples-1))
-xlabel('Time (ms)')
-ylabel('Drive Torque (Nm)')
-
-subplot(2, 5, 8)
-plot(Force_traction(:, 1:samples-1))
-xlabel('Time (ms)')
-ylabel('Drag Force (Nm)')
-
-subplot(2, 5, 9)
-plot(Force_net(:, 1:samples-1))
-xlabel('Time (ms)')
-ylabel('Net Force (Nm)')
-
-subplot(2, 5, 10)
-plot(drive_torque(:, 1:samples-1))
-xlabel('Time (ms)')
-ylabel('Drive Torque (Nm)')
+multiplot(samples, velocity, acceleration, wheel_velocity, rpm, current_gear, slip_ratio, Force_traction, Force_drag, Force_net, drive_torque)
