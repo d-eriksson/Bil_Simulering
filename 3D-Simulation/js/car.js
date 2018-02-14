@@ -138,10 +138,10 @@ function angularAcceleration(){
 
 	TotTorque = driveTorque() - tractionTorque() - rollingTorque() - brakingTorque() - engineBrakingTorque();
 	angAccel = TotTorque/inertia;
-	if(angularvelocity + angAccel *deltatime < 0){
+	/*if(angularvelocity + angAccel *deltatime < 0){
 		TotTorque = -1*angularvelocity*inertia/deltatime;
-	}
-	angAccel = TotTorque/inertia;
+		console.log("hej");
+	}*/
 	//console.log(TotTorque);
 	return angAccel;
 }

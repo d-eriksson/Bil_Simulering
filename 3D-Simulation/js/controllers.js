@@ -1,38 +1,26 @@
 document.addEventListener('keydown', function(e) { 
-    if(e.keyCode == 87 && cutOffThrottle == false){ // Key:w
-    	throttle = 1.0;
+    if(e.keyCode == 87){ // Key:w
+    	c7.updateThrottle(1.0);
     }
     else{
-    	throttle = 0.0;
+    	c7.updateThrottle(0.0);
     }
     if(e.keyCode == 83){// Key:s
-        breaks = 1.0; 
+        c7.updateBrakeLevel(1.0); 
     }
     if(e.keyCode == 38){// Key:upArrow
-    	gearUp();
+    	c7.gearUp();
     }
     if(e.keyCode == 40){// Key:downArrow
-    	gearDown();
+    	c7.gearDown();
     }
-    if(e.keyCode == 81) // Key: q
-    {
-        automatic = !automatic;
-        if(automatic){
-            transmissionc.innerHTML = "Transmission: Automatic";
-        }
-        else{
-            transmissionc.innerHTML = "Transmission: Manual";
-        }
-    }
-
-    
 });
 document.addEventListener('keyup', function(e) { 
     if(e.keyCode == 87){// Key:w
-    	throttle = 0.0;
+    	c7.updateThrottle(0.0);
     }
     if(e.keyCode == 83){// Key:s
-        breaks = 0.0;
+        c7.updateBrakeLevel(0.0);
     }
     if(e.keyCode == 32){// Key:space
         ChooseCamera++;
@@ -50,5 +38,4 @@ function onDocumentMouseWheel(e){
 	else if(throttle < 0.0){
 		throttle = 0.0;
 	}
-
 }
