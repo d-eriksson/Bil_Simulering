@@ -5,7 +5,7 @@ clc
 %% Define Car Parameters
 % SIMULATION SETTINGS
 Ts = 0.001;             % Time step
-duration = 10;          % Duration of simulation
+duration = 20;          % Duration of simulation
 samples = 1+duration/Ts;  % Number of samples, used to preallocate arrays
 
 % Car mass
@@ -40,7 +40,7 @@ clutch_level = 1;
 clear differentialRatio
 
 % RESOLVE INITIAL CONDITIONS
-velocity = zeros(2,samples+1);
+velocity = zeros(1,samples+1);
 angular_velocity = zeros(1,samples+1);
 Force_traction = zeros(1,samples+1);
 current_gear = ones(1,samples); % Gears are changed automatically at redline (for now)
@@ -48,10 +48,15 @@ gearRatio = gears(1);
 deactivate_throttle = false;
 braking_level = 0;
 engine_braking_torque = 0;
-angle_sideslip = 0;
+direction_car = [1 0];
+angle_car = 0;
+direction_velocity = [1 0];
+angle_velocity = 0;
+direction_wheels = [1 0];
+angle_wheels = 0;
 angle_steering = 0;
+angle_sideslip = 0;
 omega = 0;
-slip_angle = zeros(2,samples);
 
 % MEMORY PREALLOCATION
 acceleration = zeros(1, samples);
@@ -94,9 +99,9 @@ drive_torque(i) = clutch_level*throttle*(560-0.000025*abs(4400-rpm(i)).^2+0.0000
 traction_torque(i) = Force_traction(i)*wheel_radius;
 % Total torque is the total torque acting on the wheel
 total_torque(i) = drive_torque(i) - traction_torque(i);
-% NEW ROLLING RESISTANCE, 0.414938*0.00019 is the
+% NEW ROLLING RESISTANCE, 0.414938*(0.01+0.00019*velocity(i)) is the
 % coefficient with tyre pressure 2.41 bar.
-rolling_resistance_torque(i) = (0.414938*0.00019*velocity(1,i))*mass*9.81*wheel_radius;
+rolling_resistance_torque(i) = (0.414938*0.00019*velocity(i))*mass*9.81*wheel_radius;
 % Bromskraft
 total_torque(i) = total_torque(i)-rolling_resistance_torque(i)-engine_braking_torque;
 if(angular_velocity(i)>5)
@@ -112,13 +117,13 @@ wheel_velocity(i) = angular_velocity(i+1)*wheel_radius;
 
 % ---- SLIP ---- %
 % Beräkna side slip
-angle_sideslip = atan(velocity(1,i)/velocity(1,i));
+angle_sideslip = atan(direction_velocity(2)*velocity(i)/(direction_velocity(1)*velocity(i)));
 % Beräkna slip angles
 slip_angle(1,i) = atan((velocity(2,i)+omega*wheelbase/2)/abs(velocity(1,i)))-angle_steering*sign(velocity(1,i));
 slip_angle(2,i) = atan((velocity(2,i)+omega*wheelbase/2)/abs(velocity(1,i)));
 
 for k=1:2
-    if(slip_angle(k,i)>=0 && slip_angle(k,i)<=3)
+if(slip_angle(k,i)>=0 && slip_angle(k,i)<=3)
          angle_multiplier = 1-abs((1-slip_angle(k,i)/3));
     elseif(slip_angle(k,i)>3)
          angle_multiplier = 0.7+0.3*3/slip_angle(k,i);
@@ -130,7 +135,7 @@ for k=1:2
     end
 end
 % Vinkelhastighet för karossen
-omega = velocity(2,i)/(2*pi*wheelbase/2);
+omega = direction_velocity(2)*velocity(1,i)/(2*pi*wheelbase/2);
 
 % Beräkna slip ratio
 slip_ratio(i) = (wheel_velocity(i)-velocity(1,i))/abs(velocity(1,i));
@@ -150,14 +155,13 @@ end
 % Propelling forces
 Force_traction(i+1) = force_multiplier*normal_force(2, i);
 % Resistive forces
-Force_drag(i) = Cdrag*velocity(1,i).^2;
+Force_drag(i) = Cdrag*velocity(i).^2;
 % Slutgiltig kraft på bil
 Force_net(i) = Force_traction(i+1) - Force_drag(i);
 % Calculate acceleration
 acceleration(i) = Force_net(i)/(mass*wheel_radius);
 % Calculate velocity
-velocity(1,i+1) = velocity(1,i) + acceleration(i)*Ts;
-% BERÄKNA VELOCITY(2,i+1) ????????????????????????????????????????????????
+velocity(i+1) = velocity(i) + acceleration(i)*Ts;
 
 % Calculated normal force on rear wheels
 normal_force(2, i+1) = 0.49*mass*9.81 + CoG_height/wheelbase*mass*acceleration(i);

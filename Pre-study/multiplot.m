@@ -2,7 +2,7 @@ function [] = multiplot(samples, velocity, acceleration, wheel_velocity, rpm, cu
 % Show figures
 figure
 subplot(2, 5, 1)
-plot(velocity(:, 1:samples-1)*3.6)
+plot(velocity(1, 1:samples-1)*3.6)
 xlabel('Time (ms)')
 ylabel('Velocity (km/h)')
 
