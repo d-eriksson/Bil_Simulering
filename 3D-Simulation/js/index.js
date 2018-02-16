@@ -53,10 +53,11 @@ function init(){
 	loadMTLOBJ('objects/c7/','c7.mtl','c7.obj',0 ,0 ,0,car, 0.053488095, -Math.PI/2);
 	lights();
 	initPostProcessing();
-	c7 = new Car(car ,1600, 0.34, 200, 0.3, 1.9, 3.42, 0.7, true);
+	c7 = new Car(car ,1600, 0.34, 200, 0.3, 1.9, 3.42, 0.7,0.381,2.654, true);
 	scene.add(car);
 
 	initSky();
+	window.addEventListener( 'resize', onWindowResize, false );
 }
 function animate() {
 	renderer.clear();
@@ -91,4 +92,18 @@ function render(){
 	else if(ChooseCamera == 5){
 		postprocessing.composer.render( 5 );
 	}
+}
+
+function onWindowResize() {
+	camera.aspect = window.innerWidth / window.innerHeight;
+	camera.updateProjectionMatrix();
+	camera2.aspect = window.innerWidth / window.innerHeight;
+	camera2.updateProjectionMatrix();
+	camera3.aspect = window.innerWidth / window.innerHeight;
+	camera3.updateProjectionMatrix();
+	camera4.aspect = window.innerWidth / window.innerHeight;
+	camera4.updateProjectionMatrix();
+	camera5.aspect = window.innerWidth / window.innerHeight;
+	camera5.updateProjectionMatrix();
+	renderer.setSize( window.innerWidth, window.innerHeight );
 }

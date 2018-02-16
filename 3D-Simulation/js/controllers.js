@@ -2,9 +2,6 @@ document.addEventListener('keydown', function(e) {
     if(e.keyCode == 87){ // Key:w
     	c7.updateThrottle(1.0);
     }
-    else{
-    	c7.updateThrottle(0.0);
-    }
     if(e.keyCode == 83){// Key:s
         c7.updateBrakeLevel(1.0); 
     }
@@ -13,6 +10,12 @@ document.addEventListener('keydown', function(e) {
     }
     if(e.keyCode == 40){// Key:downArrow
     	c7.gearDown();
+    }
+    if(e.keyCode == 65){// Key:A
+        c7.turnLeft = true;
+    }
+    if(e.keyCode == 68){// Key:D
+        c7.turnRight = true;
     }
 });
 document.addEventListener('keyup', function(e) { 
@@ -28,14 +31,10 @@ document.addEventListener('keyup', function(e) {
         	ChooseCamera = 0;
         }
     }
+    if(e.keyCode == 65){// Key:A
+        c7.turnLeft = false;
+    }
+    if(e.keyCode == 68){// Key:D
+        c7.turnRight = false;
+    }
 });
-document.addEventListener( 'wheel', onDocumentMouseWheel, false );
-function onDocumentMouseWheel(e){
-	throttle += e.deltaY*(-1) *0.001;
-	if(throttle >= 1.0){
-		throttle = 1.0;
-	}
-	else if(throttle < 0.0){
-		throttle = 0.0;
-	}
-}

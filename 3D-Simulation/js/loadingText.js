@@ -1,0 +1,12 @@
+var text = "Loading",
+height = 20,
+size = 70,
+hover = 30,
+curveSegments = 4,
+bevelThickness = 2,
+bevelSize = 1.5,
+bevelSegments = 3,
+bevelEnabled = true,
+font = undefined,
+fontName = "helvetiker",
+fontWeight = "normal";

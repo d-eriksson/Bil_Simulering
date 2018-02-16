@@ -2,11 +2,11 @@
 <html>
 	<head>
 		<meta charset=utf-8>
-		<title>My first three.js app</title>
+		<title>Car simulation</title>
 		<style>
 			body { margin: 0; }
 			canvas { width: 100%; height: 100% }
-			.GUI{ width:100%; height: 100%; position: absolute; top:0; left:0; z-index: 99; color:white;font-size:22px;}
+			.GUI{ width:100%; height: 100%; position: absolute; top:0; left:0; z-index: 99; color:white;font-size:20px;}
 			#broms{height: 115px;width:100px;background-color:black;position: fixed; right:10px; bottom:10px;}
 			.img{width:100%;}
 		</style>
@@ -33,6 +33,7 @@
 			<p id="ForceTraction"></p>
 			<p id="ForceDrag"></p>
 			<p id="ForceNet"></p>
+			<p id="NormalForce"></p>
 			
 			<p id="Gear"></p>
 
@@ -43,6 +44,7 @@
 		
 		<script src="node_modules/three/examples/js/loaders/OBJLoader.js"></script>
 		<script src="node_modules/three/examples/js/loaders/MTLLoader.js"></script>
+		<script src="node_modules/three/examples/js/utils/GeometryUtils.js"></script>
 
 		<script src="node_modules/three/examples/js/objects/Sky.js"></script>
 

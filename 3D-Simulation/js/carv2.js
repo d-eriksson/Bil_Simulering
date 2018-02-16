@@ -21,20 +21,23 @@ var ForceMultiplierc = document.getElementById('ForceMultiplier');
 var ForceTractionc = document.getElementById('ForceTraction');
 var ForceDragc = document.getElementById('ForceDrag');
 var ForceNetc = document.getElementById('ForceNet');
+var NormalForcec = document.getElementById('NormalForce');
 
 class Car{
-	constructor(GROUP ,CARMASS, WHEELRADIUS, MASSBACKAXIS, DRAGCOEFFICIENT, DRAGAREA, DIFFERENTIALRATIO, TRANSMISSIONEFFICIENCY, AUTOMATIC){
+	constructor(GROUP ,CARMASS, WHEELRADIUS, MASSBACKAXIS, DRAGCOEFFICIENT, DRAGAREA, DIFFERENTIALRATIO, TRANSMISSIONEFFICIENCY,COGHEIGHT, WHEELBASE, AUTOMATIC){
 		
 		this.carGroup = GROUP;
 
 		//Car mass variables
 		this.carMass = CARMASS;
-		this.LoadRearWheels = 0.49*this.carMass*9.81;
+		this.normalForce = 0.49*this.carMass*9.81;
 		this.wheelRadius = WHEELRADIUS;
+		this.wheelBase = WHEELBASE;
 
 		// Back wheels inertia
 		this.massBackAxis = MASSBACKAXIS;
 		this.inertia = this.massBackAxis * Math.pow(this.wheelRadius,2)*0.5;
+		this.CoGHeight = COGHEIGHT;
 
 		// Drag calculations
 		this.dragCoefficient = DRAGCOEFFICIENT;
@@ -70,6 +73,8 @@ class Car{
 		this.forceDrag = 0.0;
 		this.forceNet = 0.0;
 
+		//turning
+		this.delta = 0.0;
 
 		//misc
 		this.throttle = 0.0;
@@ -80,6 +85,8 @@ class Car{
 		this.automatic = AUTOMATIC;
 		this.RPM = 0;
 		this.slipRatio = 0.0;
+		this.turnLeft = false;
+		this.turnRight = false;
 
 	}
 	update(dT){ // Updates all variables including the cars position.
@@ -109,6 +116,15 @@ class Car{
 			this.carGroup.position.z = this.carGroup.position.z - this.velocity*dT;
 			}
 		}
+		else{
+			if(velocity >0){
+			this.acceleration = -1;
+			// ------ Calculate car Velocity ------
+			this.velocity = this.velocity + this.acceleration*dT;
+			// ------ Calculate car Position ------
+			this.carGroup.position.z = this.carGroup.position.z - this.velocity*dT;
+			}
+		}
 		this.reset();
 	}
 	dynamicUpdate(dT){
@@ -121,12 +137,17 @@ class Car{
 			this.clutchLevel = 0.5 + 0.5* this.RPM/2000; // Clutch level between 0.5 and 1.0 when RPM < 1000 
 			this.RPM = 1000;
 		}
+		else if(this.RPM < 3500 && this.gear > 3){
+			if(this.automatic){
+				this.gearDown();
+			}
+		}
 		else if( this.RPM > 6000){
 			if(this.automatic){
 				this.gearUp();
 			}
 			this.RPM = 6000; 
-			this.throttle = 0; // The throttle is no longer usable the car will stall and not accelerate.
+			//this.throttle = 0; // The throttle is no longer usable the car will stall and not accelerate.
 		}
 		RPMc.innerHTML = "RPM: " + this.RPM;
 		// ------ Calculate Engine Torque ------
@@ -183,6 +204,12 @@ class Car{
 		this.slipRatio = (this.wheelVelocity-this.velocity)/Math.abs(this.velocity);
 		
 		SlipRatioc.innerHTML = "slipRatio: " + this.slipRatio;
+		if(Math.abs(this.slipRatio) > 0.6){
+			bromsc.style.backgroundColor ="red";
+		}
+		else{
+			bromsc.style.backgroundColor="black";
+		}
 
 		// ------ Calculate Force multiplier -------
 		if (this.slipRatio > 0){
@@ -204,7 +231,7 @@ class Car{
 		ForceMultiplierc.innerHTML = "forceMultiplier: " + this.forceMultiplier;
 
 		// ------ Calculate Force Traction ------
-		this.forceTraction = this.forceMultiplier * this.LoadRearWheels;
+		this.forceTraction = this.forceMultiplier * this.normalForce;
 		ForceTractionc.innerHTML = "forceTraction: " + Math.round(this.forceTraction);
 
 		// ------ Calculate Force Drag ------
@@ -213,6 +240,33 @@ class Car{
 		// ------ Calculate Force Net ------
 		this.forceNet = this.forceTraction - this.forceDrag;
 		ForceNetc.innerHTML = "forceNet: " + Math.round(this.forceNet);
+
+		if(this.turnRight && !this.turnLeft){
+			this.delta -= Math.PI/4* dT;
+			if(this.delta < -Math.PI/4){
+				this.delta = -Math.PI/4;
+			}
+
+		}
+		else if(this.turnLeft && !this.turnRight){
+			this.delta += Math.PI/4 * dT;
+			if(this.delta > Math.PI/4){
+				this.delta = Math.PI/4;
+			}
+		}
+		else if(!this.turnLeft && !this.turnRight){
+			if(this.delta < -0.1){
+				this.delta += Math.PI/2*dT
+			}
+			else if(this.delta > 0.1){
+				this.delta -= Math.PI/2*dT
+			}
+			else{
+				this.delta = 0;
+			}
+		}
+		console.log(this.delta);
+
 		// ------ Calculate car Acceleration ------
 		this.acceleration = this.forceNet/(this.carMass*this.wheelRadius);
 		Accelerationc.innerHTML = "Acceleration: " + Math.round(this.acceleration*3.6) + "  km/h";
@@ -220,7 +274,8 @@ class Car{
 		this.velocity = this.velocity + this.acceleration*dT;
 		Vkmhc.innerHTML = "Velocity: " + Math.round(this.velocity*3.6) + "  km/h";
 		// ------ Calculate car Position ------
-
+		this.normalForce = 0.49*this.carMass*9.81 + (this.CoGHeight/this.wheelBase) * this.carMass * this.acceleration;
+		NormalForcec.innerHTML = "normalForce: " + Math.round(this.normalForce);
 		this.carGroup.position.z = this.carGroup.position.z - this.velocity*dT;
 
 		
