@@ -22,7 +22,7 @@ public class DriveCar : MonoBehaviour {
 	public float differentialRatio;
 	public float transmissonEffecieny;
 	public float[] gearRatio;
-	public int gear;
+	private int gear;
 	// Torques
 	private float engineTorque = 0;
 	private float driveTorque = 0;
@@ -48,7 +48,7 @@ public class DriveCar : MonoBehaviour {
 	private float delta = 0.0f;
 
 	//misc
-	private float throttle = 0.0f;
+	private float throttle = 1.0f;
 	private Vector3 velocity = new Vector3(0,0,0);
 	private Vector3 acceleration = new Vector3(0,0,0);
 	private float rollingResistance;
@@ -66,6 +66,7 @@ public class DriveCar : MonoBehaviour {
 		normalForceFront = 0.51f*carMass*gravity;
 		normalForceBack = 0.49f*carMass*gravity;
 		rollingResistance = 30* netDragCoefficient;
+		gear = 1;
 
 	}
 	
@@ -73,33 +74,63 @@ public class DriveCar : MonoBehaviour {
 	void Update () {
 
 		// Calculate RPM
-		RPM = angularVelocity * gearRatio[gear]* differentialRatio * 60 / (2 * Mathf.PI);
+		RPM = Mathf.Round(angularVelocity * gearRatio[gear-1]* differentialRatio * 60 / (2 * Mathf.PI));
 		if (RPM < 1000) {
 			RPM = 1000;
 			gearDown ();
-		} else if (RPM > 6000) {
+		} 
+		else if (RPM > 6000) {
+			RPM = 6000;
 			gearUp ();
 		}
 
 		// Calculate Torque
 		engineTorque = (560)-(0.000025f*Mathf.Pow(Mathf.Abs(4400-RPM),2))+(0.000000004f*Mathf.Pow(Mathf.Abs(4400-RPM),3)) - (0.02f*RPM);
-		driveTorque = throttle * engineTorque * gearRatio [gear] * differentialRatio * transmissonEffecieny;
+		driveTorque = throttle * engineTorque * gearRatio [gear-1] * differentialRatio * transmissonEffecieny;
 		rollingTorque = 0.414938f * 0.00019f * wheelVelocity * carMass * gravity * wheelRadius;
 		tractionTorque = forceTraction * wheelRadius;
+
 		if (Mathf.Abs (angularVelocity) > 5) {
 			brakingTorque = Mathf.Sign (angularVelocity) * 6000 * brakeLevel;
 
 		} else {
 			brakingTorque = angularVelocity * 1200 * brakeLevel;
 		}
-		engineBrakeTorque = 0.02f * RPM * (1-StepFunction(throttle));
 
+		engineBrakeTorque = 0.02f * RPM * (1-StepFunction(throttle));
+		angularAcceleration = (driveTorque -tractionTorque -rollingTorque -brakingTorque -engineTorque)/inertiaWheels;
+		angularVelocity += Mathf.Round (angularAcceleration);
+		wheelVelocity = angularVelocity * wheelRadius;
+
+		slipRatio = (wheelVelocity - velocity.x) / Mathf.Abs (velocity.x);
+
+		if (Mathf.Abs (slipRatio) <= 0.06f) {
+			forceMultiplier = Mathf.Sign (slipRatio) + Mathf.Sign (slipRatio) * (-16.67f) * Mathf.Abs (0.06f + Mathf.Sign (slipRatio) * (-slipRatio));
+		} else {
+			forceMultiplier = Mathf.Sign (slipRatio) * 0.5f + 0.5f * 0.06f / slipRatio;
+		}
+
+		forceTraction = forceMultiplier * normalForceBack;
+		forceDrag = netDragCoefficient * Mathf.Pow (velocity.x, 2);
+		forceNet = forceTraction - forceDrag;
+		Vector3 temp = new Vector3 (forceNet / (carMass * wheelRadius), 0,0);
+		acceleration = temp;
+		velocity += acceleration * Time.deltaTime;
+		normalForceBack = 0.49f*carMass*9.81f + (CoGHeight/wheelBase) * carMass * acceleration.x;
+		transform.position += velocity*Time.deltaTime;
+		Debug.Log (velocity*3.6f);
 
 	}
 
 	void gearDown(){
+		if (gear > 1 && gear <= 6) {
+			gear--;
+		}
 	}
 	void gearUp(){
+		if (gear >= 1 && gear < 6) {
+			gear++;
+		}
 	}
 	private int StepFunction(float a){
 		if (a == 0) {
