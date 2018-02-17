@@ -3,45 +3,127 @@
 	<head>
 		<meta charset=utf-8>
 		<title>Car simulation</title>
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css">
+		<link rel='stylesheet prefetch' href='https://fonts.googleapis.com/css?family=Titillium+Web:300,700,300italic'>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/prefixfree/1.0.7/prefixfree.min.js"></script>
+
 		<style>
+			html {font-family: "Titillium Web", sans-serif;}
 			body { margin: 0; }
 			canvas { width: 100%; height: 100% }
-			.GUI{ width:100%; height: 100%; position: absolute; top:0; left:0; z-index: 99; color:white;font-size:20px;}
+			.GUI{ width:100%; height: 100%; position: absolute; z-index: 99; margin: 25px 25px; box-shadow: 0 10px 0 0 #ffa868 inset; max-width: 200px; padding: 10px 30px 10px 30px;  background-color: #fefffa73;}
 			#broms{height: 115px;width:100px;background-color:black;position: fixed; right:10px; bottom:10px;}
 			.img{width:100%;}
+			h1, h2 {color: #ffa868;}
+			h1 { text-transform: uppercase; line-height: 42px;letter-spacing: 3px;font-weight: 100;}
+			h2 {line-height: 34px;font-weight: 300;letter-spacing: 1px;display: block; margin: 0;cursor: pointer;}
+			p {color: rgba(48, 69, 92, 0.8);letter-spacing: 1px;position: relative;overflow: hidden;max-height: 800px;opacity: 1;margin-top: 6px;z-index: 2;}
+			ul {list-style: none;perspective: 900;padding: 0;margin: 0;}
+			ul li {position: relative;border-top: 1px dotted #dce7eb;}
+
 		</style>
 	</head>
 	<body>
 		<div class="GUI">
-			<p id="time"></p>
-			<p id="Throttle"></p>
-			<p id="breaking"></p>
-			<p id="Vkmh"></p>
-			<p id="Acceleration"></p>
-			<p id="RPM"></p>
-			<p id="EngineTorque"></p>
-			<p id="DriveTorque"></p>
-			<p id="RollingTorque"></p>
-			<p id="TractionTorque"></p>
-			<p id="BrakingTorque"></p>
-			<p id="EngineBrakeTorque"></p>
-			<p id="AngularAcceleration"></p>
-			<p id="AngularVelocity"></p>
-			<p id="WheelVelocity"></p>
-			<p id="SlipRatio"></p>
-			<p id="ForceMultiplier"></p>
-			<p id="ForceTraction"></p>
-			<p id="ForceDrag"></p>
-			<p id="ForceNet"></p>
-			<p id="NormalForce"></p>
-			
-			<p id="Gear"></p>
+		<ul>
+			<li>
+				<h2>time</h2>
+					<p id="time"></p>
+			</li>
+			<li>
+				<h2>Throttle</h2>
+					<p id="Throttle"></p>
+			</li>
+			<li>
+				<h2>breaking</h2>
+					<p id="breaking"></p>
+			</li>
+			<li>
+				<h2>Vkmh</h2>
+					<p id="Vkmh"></p>
+			</li>
+			<li>
+				<h2>Acceleration</h2>
+					<p id="Acceleration"></p>
+			</li>
+			<li>
+				<h2>RPM</h2>
+					<p id="RPM"></p>
+			</li>
+			<li>
+				<h2>EngineTorque</h2>
+					<p id="EngineTorque"></p>
+			</li>
+			<li>
+				<h2>DriveTorque</h2>
+					<p id="DriveTorque"></p>
+			</li>
+			<li>
+				<h2>RollingTorque</h2>
+					<p id="RollingTorque"></p>
+			</li>
+			<li>
+				<h2>TractionTorque</h2>
+					<p id="TractionTorque"></p>
+			</li>
+			<li>
+				<h2>BrakingTorque</h2>
+					<p id="BrakingTorque"></p>
+			</li>
+			<li>
+				<h2>EngineBrakeTorque</h2>
+					<p id="EngineBrakeTorque"></p>
+			</li>
+			<li>
+				<h2>AngularAcceleration</h2>
+					<p id="AngularAcceleration"></p>
+			</li>
+			<li>
+				<h2>AngularVelocity</h2>
+					<p id="AngularVelocity"></p>
+			</li>
+			<li>
+				<h2>WheelVelocity</h2>
+					<p id="WheelVelocity"></p>
+			</li>
+			<li>
+				<h2>SlipRatio</h2>
+					<p id="SlipRatio"></p>
+			</li>
+			<li>
+				<h2>SlipRatio</h2>
+					<p id="SlipRatio"></p>
+			</li>
+			<li>
+				<h2>ForceMultiplier</h2>
+					<p id="ForceMultiplier"></p>
+			</li>
+			<li>
+				<h2>ForceTraction</h2>
+					<p id="ForceTraction"></p>
+			</li>
+			<li>
+				<h2>ForceDrag</h2>
+					<p id="ForceDrag"></p>
+			</li>
+			<li>
+				<h2>ForceNet</h2>
+					<p id="ForceNet"></p>
+			</li>
+			<li>
+				<h2>NormalForce</h2>
+					<p id="NormalForce"></p>
+			</li>
+			<li>
+				<h2>Gear</h2>
+					<p id="Gear"></p>
+			</li>
 
 			<div id="broms"><img src="broms.png" class="img"/></div>
 		</div>
 		<script src="http://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha256-3edrmyuQ0w65f8gfBsqowzjJe2iM6n0nKciPUp8y+7E=" crossorigin="anonymous"></script>
 		<script src="node_modules/three/build/three.js"></script>
-		
+
 		<script src="node_modules/three/examples/js/loaders/OBJLoader.js"></script>
 		<script src="node_modules/three/examples/js/loaders/MTLLoader.js"></script>
 		<script src="node_modules/three/examples/js/utils/GeometryUtils.js"></script>

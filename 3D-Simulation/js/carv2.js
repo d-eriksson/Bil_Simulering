@@ -25,7 +25,7 @@ var NormalForcec = document.getElementById('NormalForce');
 
 class Car{
 	constructor(GROUP ,CARMASS, WHEELRADIUS, MASSBACKAXIS, DRAGCOEFFICIENT, DRAGAREA, DIFFERENTIALRATIO, TRANSMISSIONEFFICIENCY,COGHEIGHT, WHEELBASE, AUTOMATIC){
-		
+
 		this.carGroup = GROUP;
 
 		//Car mass variables
@@ -59,7 +59,7 @@ class Car{
 		this.tractionTorque = 0;
 		this.brakingTorque = 0;
 		this.engineBrakeTorque = 0;
-		
+
 
 		// Wheel velocity and acceleration
 		this.angularVelocity = 0.0;
@@ -67,7 +67,7 @@ class Car{
 		this.wheelVelocity = 0.0;
 
 
-		// Forces 
+		// Forces
 		this.forceMultiplier = 0.0;
 		this.forceTraction = 0.0;
 		this.forceDrag = 0.0;
@@ -134,7 +134,7 @@ class Car{
 			if(this.automatic){
 				this.gearDown();
 			}
-			this.clutchLevel = 0.5 + 0.5* this.RPM/2000; // Clutch level between 0.5 and 1.0 when RPM < 1000 
+			this.clutchLevel = 0.5 + 0.5* this.RPM/2000; // Clutch level between 0.5 and 1.0 when RPM < 1000
 			this.RPM = 1000;
 		}
 		else if(this.RPM < 3500 && this.gear > 3){
@@ -146,25 +146,25 @@ class Car{
 			if(this.automatic){
 				this.gearUp();
 			}
-			this.RPM = 6000; 
+			this.RPM = 6000;
 			//this.throttle = 0; // The throttle is no longer usable the car will stall and not accelerate.
 		}
-		RPMc.innerHTML = "RPM: " + this.RPM;
+		RPMc.innerHTML = "" + this.RPM;
 		// ------ Calculate Engine Torque ------
 		// Engine torque from a lookup table the algorithm below is an approximation of that lookup table.
 		this.engineTorque = (560)-(0.000025*Math.pow(Math.abs(4400-this.RPM),2))+(0.000000004*Math.pow(Math.abs(4400-this.RPM),3)) - (0.02*this.RPM);
 
-		EngineTorquec.innerHTML = "engineTorque: " + Math.round(this.engineTorque);
+		EngineTorquec.innerHTML = "" + Math.round(this.engineTorque);
 		// ------ Calculate Drive Torque ------
 		this.driveTorque =  this.throttle * this.engineTorque * this.gearRatio[this.gear] * this.differentialRatio * this.transmissionEfficiency;
-		DriveTorquec.innerHTML = "driveTorque: " + Math.round(this.driveTorque);
+		DriveTorquec.innerHTML = "" + Math.round(this.driveTorque);
 		// ------ Calculatie Rolling Torque ------
 		this.rollingTorque = 0.414938 * 0.00019 * this.velocity * this.carMass * gravity * this.wheelRadius;
-		RollingTorquec.innerHTML = "rollingTorque: " + Math.round(this.rollingTorque);
-		// ------ Calculate Traction Torque ------	
+		RollingTorquec.innerHTML = "" + Math.round(this.rollingTorque);
+		// ------ Calculate Traction Torque ------
 		this.tractionTorque = this.forceTraction * this.wheelRadius;
-		TractionTorquec.innerHTML = "tractionTorque: " + Math.round(this.tractionTorque);
-			
+		TractionTorquec.innerHTML = "" + Math.round(this.tractionTorque);
+
 		// ------ Calculate Braking Torque ------
 		if(this.brakeLevel > 0.0){
 			if(Math.abs(this.angularVelocity) > 5 ){
@@ -176,7 +176,7 @@ class Car{
 				 console.log(this.brakingTorque);
 			}
 		}
-		BrakingTorquec.innerHTML = "brakingTorque: " + Math.round(this.brakingTorque);
+		BrakingTorquec.innerHTML = "" + Math.round(this.brakingTorque);
 		// ------ Calculate Enginebrake Torque ------
 
 		if(this.throttle > 0.0){
@@ -185,25 +185,25 @@ class Car{
 		else{
 			this.engineBrakeTorque = 0.02 * this.RPM;
 		}
-		
-		EngineBrakeTorquec.innerHTML = "engineBrakeTorque: " + Math.round(this.engineBrakeTorque);
+
+		EngineBrakeTorquec.innerHTML = "" + Math.round(this.engineBrakeTorque);
 		// ------ Calculate the AngulatAcceleration ------
 		// the torque sum divided by the inertia.
 		this.angularAcceleration = (this.driveTorque - this.tractionTorque - this.rollingTorque - this.brakingTorque - this.engineTorque)/this.inertia;
-		AngularAccelerationc.innerHTML = "angularAcceleration: " + Math.round(this.angularAcceleration);
+		AngularAccelerationc.innerHTML = "" + Math.round(this.angularAcceleration);
 		// ------ Calculate the Angular Veclocity ------
 
 		this.angularVelocity = this.angularVelocity + this.angularAcceleration*dT;
-		AngularVelocityc.innerHTML = "angularVelocity: " + Math.round(this.angularVelocity);
+		AngularVelocityc.innerHTML = "" + Math.round(this.angularVelocity);
 		// ------ Calculate the Wheels velocity ------
 		this.wheelVelocity = this.angularVelocity * this.wheelRadius;
-		WheelVelocityc.innerHTML = "WheelVelocity: " + Math.round(this.wheelVelocity*3.6);
+		WheelVelocityc.innerHTML = "" + Math.round(this.wheelVelocity*3.6);
 
 		// ------ Slipratio ------
 
 		this.slipRatio = (this.wheelVelocity-this.velocity)/Math.abs(this.velocity);
-		
-		SlipRatioc.innerHTML = "slipRatio: " + this.slipRatio;
+
+		SlipRatioc.innerHTML = "" + this.slipRatio;
 		if(Math.abs(this.slipRatio) > 0.6){
 			bromsc.style.backgroundColor ="red";
 		}
@@ -228,18 +228,18 @@ class Car{
 				this.forceMultiplier = -0.5+0.5*0.06/this.slipRatio;
 			}
 		}
-		ForceMultiplierc.innerHTML = "forceMultiplier: " + this.forceMultiplier;
+		ForceMultiplierc.innerHTML = "" + this.forceMultiplier;
 
 		// ------ Calculate Force Traction ------
 		this.forceTraction = this.forceMultiplier * this.normalForce;
-		ForceTractionc.innerHTML = "forceTraction: " + Math.round(this.forceTraction);
+		ForceTractionc.innerHTML = "" + Math.round(this.forceTraction);
 
 		// ------ Calculate Force Drag ------
 		this.forceDrag = this.netDragCoefficient* Math.pow(this.velocity,2);
-		ForceDragc.innerHTML = "forceDrag: " + Math.round(this.forceDrag);
+		ForceDragc.innerHTML = "" + Math.round(this.forceDrag);
 		// ------ Calculate Force Net ------
 		this.forceNet = this.forceTraction - this.forceDrag;
-		ForceNetc.innerHTML = "forceNet: " + Math.round(this.forceNet);
+		ForceNetc.innerHTML = "" + Math.round(this.forceNet);
 
 		if(this.turnRight && !this.turnLeft){
 			this.delta -= Math.PI/4* dT;
@@ -269,20 +269,20 @@ class Car{
 
 		// ------ Calculate car Acceleration ------
 		this.acceleration = this.forceNet/(this.carMass*this.wheelRadius);
-		Accelerationc.innerHTML = "Acceleration: " + Math.round(this.acceleration*3.6) + "  km/h";
+		Accelerationc.innerHTML = "" + Math.round(this.acceleration*3.6) + "  km/h";
 		// ------ Calculate car Velocity ------
 		this.velocity = this.velocity + this.acceleration*dT;
-		Vkmhc.innerHTML = "Velocity: " + Math.round(this.velocity*3.6) + "  km/h";
+		Vkmhc.innerHTML = "" + Math.round(this.velocity*3.6) + "  km/h";
 		// ------ Calculate car Position ------
 		this.normalForce = 0.49*this.carMass*9.81 + (this.CoGHeight/this.wheelBase) * this.carMass * this.acceleration;
-		NormalForcec.innerHTML = "normalForce: " + Math.round(this.normalForce);
+		NormalForcec.innerHTML = "" + Math.round(this.normalForce);
 		this.carGroup.position.z = this.carGroup.position.z - this.velocity*dT;
 
-		
-		
-		
-		Throttlec.innerHTML = "Throttle: " + this.throttle;
-		breakingc.innerHTML = "BrakingLevel: " + this.brakeLevel;
+
+
+
+		Throttlec.innerHTML = "" + this.throttle;
+		breakingc.innerHTML = "" + this.brakeLevel;
 
 
 	}
@@ -294,7 +294,7 @@ class Car{
 		this.tractionTorque = 0;
 		this.brakingTorque = 0;
 		this.engineBrakeTorque = 0;
-		
+
 
 		// Wheel velocity and acceleration
 		this.angularVelocity = 0.0;
@@ -302,7 +302,7 @@ class Car{
 		this.wheelVelocity = 0.0;
 
 
-		// Forces 
+		// Forces
 		this.forceMultiplier = 0.0;
 		this.forceTraction = 0.0;
 		this.forceDrag = 0.0;
