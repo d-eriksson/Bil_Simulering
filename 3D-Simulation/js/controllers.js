@@ -25,7 +25,7 @@ document.addEventListener('keyup', function(e) {
     if(e.keyCode == 83){// Key:s
         c7.updateBrakeLevel(0.0);
     }
-    if(e.keyCode == 32){// Key:space
+    if(e.keyCode == 67){// Key:C
         ChooseCamera++;
         if(ChooseCamera > 5){
         	ChooseCamera = 0;

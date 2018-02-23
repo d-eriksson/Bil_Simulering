@@ -242,13 +242,44 @@ class Car{
 
 		// ------ Steering ------
 		this.evaluteSteeringDelta(dT);
-		if(this.delta != 0.0){
-			this.TurnRadius = this.wheelBase/Math.sin(this.delta);
+		this.sideSlipAngle = Math.atan(this.velocity.x/this.velocity.z);
+		this.slipAngleFront = (180/Math.PI)*(Math.atan((this.velocity.x + this.omega*(this.wheelBase/2))/ Math.abs(this.velocity.z))+this.delta*Math.sign(this.velocity.z));
+		this.slipAngleRear =  (180/Math.PI)*(Math.atan((this.velocity.x - this.omega*(this.wheelBase/2))/ Math.abs(this.velocity.z)));
+		//console.log("sideSlipAngle: " + this.sideSlipAngle + "slipAngleFront: " + this.slipAngleFront + "slipAngleRear: " + this.slipAngleRear)
+		console.log("slipAngleFront: " + this.slipAngleFront+ " slipAngleRear: " + this.slipAngleRear);
+		
+		if(this.slipAngleFront  >= 0.0 && this.slipAngleFront <= 3.0){
+			this.angleMultiplierFront = 1 - Math.abs(1-this.slipAngleFront/3.0);
 		}
-		else{
-			this.TurnRadius = Infinity;
+		else if(this.slipAngleFront > 3.0){
+			this.angleMultiplierFront = 0.7+0.3*3.0/this.slipAngleFront;
 		}
-		this.omega = this.velocity.z/this.TurnRadius;
+		else if(this.slipAngleFront <= 0.0 && this.slipAngleFront >= -3.0){
+			this.angleMultiplierFront = -1 + Math.abs(1+this.slipAngleFront/3.0);
+		}
+		else if(this.slipAngleFront < -3.0){
+			this.angleMultiplierFront = -0.7+0.3*3.0/this.slipAngleFront;
+		}
+
+
+		if(this.slipAngleRear >= 0.0 && this.slipAngleRear <= 3.0){
+			this.angleMultiplierRear = 1 - Math.abs(1-this.slipAngleRear/3.0);
+		}
+		else if(this.slipAngleRear > 3.0){
+			this.angleMultiplierRear = 0.7+0.3*3.0/this.slipAngleRear;
+		}
+		else if(this.slipAngleRear <= 0.0 && this.slipAngleRear >= -3.0){
+			this.angleMultiplierRear = -1 + Math.abs(1+this.slipAngleRear/3.0);
+		}
+		else if(this.slipAngleRear < -3.0){
+			this.angleMultiplierRear = -0.7+0.3*3.0/this.slipAngleRear;
+		}
+
+		this.FlatFront = this.angleMultiplierFront * this.normalForceFront;
+		this.FlatRear = this.angleMultiplierRear * this.normalForceBack;
+		this.corneringForce = this.FlatRear + Math.cos(this.delta)* this.FlatFront;
+		this.omega = this.FlatFront * (this.wheelBase/2)/this.carInertia - this.FlatRear * (this.wheelBase/2)/this.carInertia;
+		//this.omega = this.omega + this.omegaAcc*dT;
 		
 
 		// ------ Calculate Force Traction ------
@@ -266,7 +297,7 @@ class Car{
 
 		// ------ Calculate car Acceleration ------
 		this.acceleration.z = this.forceNet/(this.carMass*this.wheelRadius);
-
+		this.acceleration.x = this.corneringForce / this.carMass;
 		Accelerationc.innerHTML = "" + Math.round(this.acceleration.z*3.6) + "  km/h";
 		// ------ Calculate car Velocity ------
 		this.velocity.z = this.velocity.z + this.acceleration.z*dT;
@@ -278,8 +309,8 @@ class Car{
 		NormalForcec.innerHTML = "" + Math.round(this.normalForceBack);
 		//this.carGroup.position.z = this.carGroup.position.z - this.velocity.z*dT;
 		this.carGroup.translateZ(-this.velocity.z*dT);
+		this.carGroup.translateX(this.velocity.x*dT);
 		this.carGroup.rotateY(this.omega*dT);
-
 		
 
 
@@ -361,5 +392,4 @@ class Car{
 			}
 		}
 	}
-
 }

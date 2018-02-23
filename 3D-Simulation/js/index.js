@@ -47,14 +47,15 @@ function init(){
   	scene.receiveShadow = true;
   	// scene.fog = new THREE.Fog(0x000000, 0.1, 1000);
 	car = new THREE.Group();
-
+	carParent = new THREE.Group();
 	createWorld();
 	camerarig();
 	loadMTLOBJ('objects/c7/','c7.mtl','c7.obj',0 ,0 ,0,car, 0.053488095, -Math.PI/2);
 	lights();
 	initPostProcessing();
-	c7 = new Car(car ,1600, 0.34, 200, 0.3, 1.9, 3.42, 0.7,0.381,2.654, true);
-	scene.add(car);
+	c7 = new Car(car,carParent ,1600, 0.34, 200, 0.3, 1.9, 3.42, 0.7,0.381,2.654, true);
+	carParent.add(car);
+	scene.add(carParent);
 
 	initSky();
 	window.addEventListener( 'resize', onWindowResize, false );

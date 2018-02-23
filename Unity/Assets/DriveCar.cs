@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -48,7 +49,7 @@ public class DriveCar : MonoBehaviour {
 	private float delta = 0.0f;
 
 	//misc
-	private float throttle = 1.0f;
+	private float throttle = 0.0f;
 	private Vector3 velocity = new Vector3(0,0,0);
 	private Vector3 acceleration = new Vector3(0,0,0);
 	private float rollingResistance;
@@ -59,6 +60,7 @@ public class DriveCar : MonoBehaviour {
 	private bool turnLeft = false;
 	private bool turnRight = false;
 	private float gravity = 9.81f;
+	private float infinity = 0.000000000000000000000000000000000000001f;
 	// Use this for initialization
 	void Start () {
 		inertiaWheels = massBackAxis * Mathf.Pow(wheelRadius,2)*0.5f;
@@ -67,14 +69,14 @@ public class DriveCar : MonoBehaviour {
 		normalForceBack = 0.49f*carMass*gravity;
 		rollingResistance = 30* netDragCoefficient;
 		gear = 1;
-
+		Debug.Log (Application.persistentDataPath);
 	}
 	
 	// Update is called once per frame
 	void Update () {
-
+		controls ();
 		// Calculate RPM
-		RPM = Mathf.Round(angularVelocity * gearRatio[gear-1]* differentialRatio * 60 / (2 * Mathf.PI));
+		RPM = angularVelocity * gearRatio[gear-1]* differentialRatio * 60 / (2 * Mathf.PI);
 		if (RPM < 1000) {
 			RPM = 1000;
 			gearDown ();
@@ -83,6 +85,25 @@ public class DriveCar : MonoBehaviour {
 			RPM = 6000;
 			gearUp ();
 		}
+
+		if (velocity.x != 0 ) {
+			slipRatio = (wheelVelocity - velocity.x) / Mathf.Abs (velocity.x);
+		} else {
+			slipRatio = (wheelVelocity - velocity.x) / infinity;
+
+		}
+
+		if (Mathf.Abs (slipRatio) <= 0.06f && slipRatio != 0) {
+			forceMultiplier = Mathf.Sign (slipRatio) + Mathf.Sign (slipRatio) * (-1 / 0.06f) * Mathf.Abs (0.06f + Mathf.Sign (slipRatio) * (-slipRatio));
+		} else if (slipRatio == 0) {
+			forceMultiplier = 0;
+		}
+		else {
+			forceMultiplier = Mathf.Sign (slipRatio) * 0.5f + 0.5f * 0.06f / slipRatio;
+		}
+		forceTraction = forceMultiplier * normalForceBack;
+		forceDrag = netDragCoefficient * Mathf.Pow (velocity.x, 2);
+		forceNet = forceTraction - forceDrag;
 
 		// Calculate Torque
 		engineTorque = (560)-(0.000025f*Mathf.Pow(Mathf.Abs(4400-RPM),2))+(0.000000004f*Mathf.Pow(Mathf.Abs(4400-RPM),3)) - (0.02f*RPM);
@@ -98,27 +119,19 @@ public class DriveCar : MonoBehaviour {
 		}
 
 		engineBrakeTorque = 0.02f * RPM * (1-StepFunction(throttle));
-		angularAcceleration = (driveTorque -tractionTorque -rollingTorque -brakingTorque -engineTorque)/inertiaWheels;
+		angularAcceleration = (driveTorque - tractionTorque - rollingTorque - brakingTorque)/inertiaWheels;
 		angularVelocity += Mathf.Round (angularAcceleration);
 		wheelVelocity = angularVelocity * wheelRadius;
+		Debug.Log (angularVelocity);
 
-		slipRatio = (wheelVelocity - velocity.x) / Mathf.Abs (velocity.x);
 
-		if (Mathf.Abs (slipRatio) <= 0.06f) {
-			forceMultiplier = Mathf.Sign (slipRatio) + Mathf.Sign (slipRatio) * (-16.67f) * Mathf.Abs (0.06f + Mathf.Sign (slipRatio) * (-slipRatio));
-		} else {
-			forceMultiplier = Mathf.Sign (slipRatio) * 0.5f + 0.5f * 0.06f / slipRatio;
-		}
 
-		forceTraction = forceMultiplier * normalForceBack;
-		forceDrag = netDragCoefficient * Mathf.Pow (velocity.x, 2);
-		forceNet = forceTraction - forceDrag;
 		Vector3 temp = new Vector3 (forceNet / (carMass * wheelRadius), 0,0);
 		acceleration = temp;
 		velocity += acceleration * Time.deltaTime;
 		normalForceBack = 0.49f*carMass*9.81f + (CoGHeight/wheelBase) * carMass * acceleration.x;
 		transform.position += velocity*Time.deltaTime;
-		Debug.Log (velocity*3.6f);
+		//Debug.Log (velocity*3.6f);
 
 	}
 
@@ -131,6 +144,14 @@ public class DriveCar : MonoBehaviour {
 		if (gear >= 1 && gear < 6) {
 			gear++;
 		}
+	}
+	void controls(){
+		if (Input.GetKey ("w")) {
+			throttle = 1.0f;
+		} else {
+			throttle = 0.0f;
+		}
+			
 	}
 	private int StepFunction(float a){
 		if (a == 0) {
